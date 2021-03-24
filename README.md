@@ -8,6 +8,6 @@ Video Links: [Google](https://www.youtube.com/watch?v=HcwBNcah0eo&t=4s), [Bilibi
 
 Related Paper
 ----
-EVA-Planner: Environmental Adaptive Quadrotor Planning, Lun Quan, Zhiwei Zhang, Chao Xu and Fei Gao(submitted to ICRA2021)
+EVA-Planner: Environmental Adaptive Quadrotor Planning, Lun Quan, Zhiwei Zhang, Chao Xu and Fei Gao(ICRA2021)
 
 [Preprint](http://arxiv.org/abs/2011.04246)
