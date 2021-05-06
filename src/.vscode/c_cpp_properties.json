@@ -1,0 +1,38 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/dji/Desktop/ql_ws/adaptive_2/devel/include/**",
+                "/home/dji/zzzx/ego_planner_swarm/devel/include/**",
+                "/opt/ros/kinetic/include/**",
+                "/home/dji/zzzx/ego_planner_swarm/src/planner/bspline_opt/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/real_flight_modules/VINS-Fusion/camera_models/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/real_flight_modules/djiros/include/**",
+                "/home/dji/zzzx/ego_planner_swarm/src/planner/drone_detect/include/**",
+                "/home/dji/zzzx/ego_planner_swarm/src/planner/plan_manage/include/**",
+                "/home/dji/zzzx/ego_planner_swarm/src/Utils/multi_map_server/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/adaptive_planner/path_searching/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/adaptive_planner/plan_env/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/adaptive_planner/plan_manage/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/utils/pose_utils/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/utils/quadrotor_msgs/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/real_flight_modules/realsense2_camera/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/utils/quadrotor_simulator/so3_control/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/utils/quadrotor_simulator/so3_quadrotor_simulator/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/adaptive_planner/traj_utils/include/**",
+                "/home/dji/Desktop/ql_ws/adaptive_2/src/utils/uav_utils/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

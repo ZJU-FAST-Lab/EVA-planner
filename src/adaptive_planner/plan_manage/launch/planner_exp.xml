@@ -1,0 +1,172 @@
+<launch>
+  <arg name="map_size_x_"/>
+  <arg name="map_size_y_"/>
+  <arg name="map_size_z_"/>
+
+  <arg name="odometry_topic"/>
+  <arg name="camera_pose_topic"/>
+  <arg name="depth_topic"/>
+  <arg name="cloud_topic"/>
+
+  <arg name="cx"/>
+  <arg name="cy"/>
+  <arg name="fx"/>
+  <arg name="fy"/>
+
+  <arg name="flight_type"/>
+  <arg name="point_num"/>
+  <arg name="point0_x"/>
+  <arg name="point0_y"/>
+  <arg name="point0_z"/>
+  <arg name="point1_x"/>
+  <arg name="point1_y"/>
+  <arg name="point1_z"/>
+  <arg name="point2_x"/>
+  <arg name="point2_y"/>
+  <arg name="point2_z"/>
+  <arg name="point3_x"/>
+  <arg name="point3_y"/>
+  <arg name="point3_z"/>
+
+  <!-- main node -->
+  <node pkg="plan_manage" name="adaptive_planner_node" type="adaptive_planner_node" output="screen">
+    <rosparam file="$(find plan_manage)/config/traj.yaml" command="load" />
+    <remap from = "/odom_world"    to = "$(arg odometry_topic)"/>
+    <remap from = "/sdf_map/odom"  to = "$(arg odometry_topic)"/>
+    <!--remap from = "/sdf_map/cloud" to = "$(arg cloud_topic)"/-->
+    <!--remap from = "/sdf_map/pose"  to = "$(arg camera_pose_topic)"/--> 
+    <remap from = "/sdf_map/depth" to = "$(arg depth_topic)"/>
+    
+    <!-- fsm replanning -->
+    <param name="fsm/flight_type" value="$(arg flight_type)" type="int"/>
+    <param name="fsm/waypoint_num" value="$(arg point_num)" type="int"/>
+    <param name="fsm/waypoint0_x" value="$(arg point0_x)" type="double"/>
+    <param name="fsm/waypoint0_y" value="$(arg point0_y)" type="double"/>
+    <param name="fsm/waypoint0_z" value="$(arg point0_z)" type="double"/>
+    <param name="fsm/waypoint1_x" value="$(arg point1_x)" type="double"/>
+    <param name="fsm/waypoint1_y" value="$(arg point1_y)" type="double"/>
+    <param name="fsm/waypoint1_z" value="$(arg point1_z)" type="double"/>
+    <param name="fsm/waypoint2_x" value="$(arg point2_x)" type="double"/>
+    <param name="fsm/waypoint2_y" value="$(arg point2_y)" type="double"/>
+    <param name="fsm/waypoint2_z" value="$(arg point2_z)" type="double"/>
+    <param name="fsm/waypoint3_x" value="$(arg point3_x)" type="double"/>
+    <param name="fsm/waypoint3_y" value="$(arg point3_y)" type="double"/>
+    <param name="fsm/waypoint3_z" value="$(arg point3_z)" type="double"/>
+    <param name="fsm/safety_dist" value="0.1"/>
+
+    <!-- planning fsm -->
+    <param name="sdf_map/resolution"            value="0.1" /> 
+    <param name="sdf_map/map_size_x"            value="$(arg map_size_x_)" /> 
+    <param name="sdf_map/map_size_y"            value="$(arg map_size_y_)" /> 
+    <param name="sdf_map/map_size_z"            value="$(arg map_size_z_)" /> 
+    <param name="sdf_map/local_update_range_x"  value="5.5" /> 
+    <param name="sdf_map/local_update_range_y"  value="5.5" /> 
+    <param name="sdf_map/local_update_range_z"  value="3.0" /> 
+    <param name="sdf_map/obstacles_inflation"   value="0.099" /> 
+    <param name="sdf_map/local_bound_inflate"   value="0.0"/>
+    <param name="sdf_map/local_map_margin"      value="30"/>
+    <param name="sdf_map/ground_height"         value="-0.5"/>
+    <!-- camera parameter -->
+    <param name="sdf_map/cx" value="$(arg cx)"/>
+    <param name="sdf_map/cy" value="$(arg cy)"/>
+    <param name="sdf_map/fx" value="$(arg fx)"/>
+    <param name="sdf_map/fy" value="$(arg fy)"/>
+    <!-- depth filter -->
+    <param name="sdf_map/use_depth_filter"        value="true"/>
+    <param name="sdf_map/depth_filter_tolerance"  value="0.15"/>
+    <param name="sdf_map/depth_filter_maxdist"    value="5.0"/>
+    <param name="sdf_map/depth_filter_mindist"    value="0.2"/>
+    <param name="sdf_map/depth_filter_margin"     value="2"/>
+    <param name="sdf_map/k_depth_scaling_factor"  value="1000.0"/>
+    <param name="sdf_map/skip_pixel"              value="2"/>
+    <!-- local fusion -->
+    <param name="sdf_map/p_hit"           value="0.65"/>
+    <param name="sdf_map/p_miss"          value="0.35"/>
+    <param name="sdf_map/p_min"           value="0.12"/>
+    <param name="sdf_map/p_max"           value="0.90"/>
+    <param name="sdf_map/p_occ"           value="0.80"/>
+    <param name="sdf_map/min_ray_length"  value="0.1"/>
+    <param name="sdf_map/max_ray_length"  value="5.0"/>
+
+    <param name="sdf_map/esdf_slice_height"               value="1.0"/>
+    <param name="sdf_map/visualization_truncate_height"   value="4.0"/>
+    <param name="sdf_map/virtual_ceil_height"             value="2.5"/>
+    <param name="sdf_map/show_occ_time"                   value="false"/>
+    <param name="sdf_map/show_esdf_time"                  value="false"/>
+    <param name="sdf_map/pose_type"                       value="2"/> 
+    <param name="sdf_map/frame_id"                        value="world"/>
+
+    <!-- edt map -->
+    <param name="edt_map/costmap_alpha" value="1.0" type="double"/>
+    <param name="edt_map/costmap_r"     value="0.2" type="double"/>
+    <param name="edt_map/costmap_d"     value="1.0" type="double"/>
+    
+    <!-- Astar path searching -->
+    <param name="astar/resolution_astar" value="0.1"    type="double"/>
+    <param name="astar/margin"           value="0.3"    type="double"/>
+    <param name="astar/local_margin"     value="10.0"   type="double"/>
+    <param name="astar/lambda_heu"       value="5.0"    type="double"/>
+    <param name="astar/allocate_num"     value="1000000" type="int"/>
+
+    <!-- Minimum snap optimization -->
+    <param name="minimum_snap/vel"        value="3.0" type="double"/>
+    <param name="minimum_snap/acc"        value="3.0" type="double"/>
+    <param name="minimum_snap/dev_order"  value="4"   type="int"/>
+    
+    <!-- Multi MPCC planning -->
+    <param name="multi_mpcc/Ts"                 value="0.05" type="double"/>
+    <param name="multi_mpcc/Mpcc_opt"           value="0.01" type="double"/>
+    <param name="multi_mpcc/show_lowmpc_time"   value="false"/> 
+    <param name="multi_mpcc/show_highmpcc_time" value="false"/> 
+    
+    <!-- Low MPC -->
+    <param name="low_mpc/alpha1" value="5.0" type="double"/>      <!-- fu: control input -->
+    <param name="low_mpc/alpha2" value="2.0"   type="double"/>      <!-- fc: distance to obstacle -->
+    <param name="low_mpc/alpha3" value="1.0"   type="double"/>      <!-- fs: similarity to reference path -->
+
+    <param name="low_mpc/max_iteration_num"   value="200"   type="int"/>
+    <param name="low_mpc/max_iteration_time"  value="0.01"  type="double"/>
+    <param name="low_mpc/similary_upper_"     value="0.5"   type="double"/>
+    <param name="low_mpc/similary_lower_"     value="-0.5"  type="double"/>
+    <param name="low_mpc/dist_0"             value="0.7" type="double"/> 
+    
+    <!-- MPCC Optimization -->
+    <param name="optimization/isRecord" value="false"/>
+    <param name="optimization/N"        value="40"  type="int"/>
+    <param name="optimization/K"        value="3.0" type="double"/>
+    <param name="optimization/vel_min"  value="0.1" type="double"/>
+    <param name="optimization/dist_0"   value="0.5" type="double"/>         <!-- dist_0 : trajectory safe dist -->>
+    <param name="optimization/dist_1"   value="1.0" type="double"/>         <!-- dist_1 : system safe dist -->>
+
+    <param name="optimization/alpha1" value="5.0"   type="double"/>         <!-- fs   : similarity of the reference traj -->
+    <param name="optimization/alpha2" value="0.001"  type="double"/>         <!-- fvthe: progress value -->
+    <param name="optimization/alpha3" value="1.0"  type="double"/>          <!-- fv   : velocity directioin depend panelty -->
+    <param name="optimization/alpha4" value="10.0"   type="double"/>         <!-- fc   : distance to obstacle -->
+    <param name="optimization/alpha5" value="100.0" type="double"/>         <!-- ftheta: the penalty of theta  -->
+    <param name="optimization/alpha6" value="100.0" type="double"/>         <!-- fvel facc: the penalty of vel and acc -->
+    <param name="optimization/alpha7" value="100.0"  type="double"/>         <!-- fjerk: minimum the change of jerk -->
+    <param name="optimization/alpha8" value="100.0"  type="double"/>
+
+    <param name="optimization/vel_lower" value="-3.0" type="double"/>
+    <param name="optimization/vel_upper" value="3.0"  type="double"/>
+    <param name="optimization/acc_lower" value="-6.0" type="double"/>
+    <param name="optimization/acc_upper" value="6.0"  type="double"/>
+    <param name="optimization/jerk_lower" value="-8.0" type="double"/>
+    <param name="optimization/jerk_upper" value="8.0"  type="double"/>
+
+    <!-- <param name="optimization/vel_lower" value="-2.0" type="double"/>
+    <param name="optimization/vel_upper" value="2.0"  type="double"/>
+    <param name="optimization/acc_lower" value="-4.0" type="double"/>
+    <param name="optimization/acc_upper" value="4.0"  type="double"/>
+    <param name="optimization/jerk_lower" value="-4.0" type="double"/>
+    <param name="optimization/jerk_upper" value="4.0"  type="double"/> -->
+    
+    <param name="optimization/max_iteration_num"  value="200"   type="int"/>
+    <param name="optimization/max_iteration_time" value="0.008" type="double"/>
+
+    <!-- visualization setting -->
+    <param name="visual/line_width"   value="0.08"  type="double"/>
+    <param name="visual/sphere_width" value="0.1"   type="double"/>
+  </node>
+
+</launch>

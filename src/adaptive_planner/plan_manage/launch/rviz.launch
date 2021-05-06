@@ -1,0 +1,6 @@
+<launch>
+<!-- Start rviz -->
+  <node name="rviz" pkg="rviz" type="rviz" output="screen"
+       args="-d $(find plan_manage)/launch/rviz_config/exp.rviz"> 
+  </node>
+</launch>

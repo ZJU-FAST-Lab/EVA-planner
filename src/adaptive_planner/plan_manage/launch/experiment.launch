@@ -1,0 +1,87 @@
+<launch>
+  <!-- size of map, change the size in x, y, z according to your application -->
+  <arg name="map_size_x" value="55.0"/>
+  <arg name="map_size_y" value="55.0"/>
+  <arg name="map_size_z" value=" 5"/>
+
+  <!-- topic of your odometry such as VIO or LIO -->
+  <arg name="odom_topic" value="/vins_estimator/imu_propagate" />
+
+  <!-- main algorithm params -->
+  <include file="$(find plan_manage)/launch/planner_exp.xml">
+
+    <arg name="map_size_x_" value="$(arg map_size_x)"/>
+    <arg name="map_size_y_" value="$(arg map_size_y)"/>
+    <arg name="map_size_z_" value="$(arg map_size_z)"/>
+    <arg name="odometry_topic" value="$(arg odom_topic)"/>
+
+    <!-- camera pose: transform of camera frame in the world frame -->
+    <!-- depth topic: depth image, 640x480 by default -->
+    <!-- don't set cloud_topic if you already set these ones! -->
+    <!--arg name="camera_pose_topic" value="/vins_estimator/camera_pose"/-->
+    <arg name="depth_topic" value="/camera/depth/image_rect_raw"/>
+
+    <!-- topic of point cloud measurement, such as from LIDAR  -->
+    <!-- don't set camera pose and depth, if you already set this one! -->
+    <!--arg name="cloud_topic" value="/map_generator/global_cloud"/-->
+    <!--arg name="cloud_topic" value="/pcl_render_node/cloud"/-->
+
+    <!-- intrinsic params of the depth camera -->
+    <arg name="cx" value="321.8554382324219"/>
+    <arg name="cy" value="241.2396240234375"/>
+    <arg name="fx" value="386.02557373046875"/>
+    <arg name="fy" value="386.02557373046875"/>
+
+    <!-- 1: use 3D Nav Goal to select goal  -->
+    <!-- 2: use global waypoints below  -->
+    <arg name="flight_type" value="2" />
+
+    <!-- global waypoints -->
+    <!-- It generates a piecewise min-snap traj passing all waypoints -->
+    <arg name="point_num" value="3" />
+
+    <arg name="point0_x" value="13.45"/>
+    <arg name="point0_y" value="0.24" />
+    <arg name="point0_z" value="1.6" />
+
+    <arg name="point1_x" value="18.3" />
+    <arg name="point1_y" value="-3.2" />
+    <arg name="point1_z" value="1.3" />
+
+    <arg name="point2_x" value="23.2" />
+    <arg name="point2_y" value="-13.3" />
+    <arg name="point2_z" value="1.0" />
+
+    <arg name="point3_x" value="0.0" />
+    <arg name="point3_y" value="0.0" />
+    <arg name="point3_z" value="1.0" />
+    <!-- <arg name="point0_x" value="7.58"/>
+    <arg name="point0_y" value="0.34" />
+    <arg name="point0_z" value="2.5" />
+
+    <arg name="point1_x" value="14.0" />
+    <arg name="point1_y" value="0.7" />
+    <arg name="point1_z" value="2.0" />
+
+    <arg name="point2_x" value="23.2" />
+    <arg name="point2_y" value="-13.3" />
+    <arg name="point2_z" value="1.0" />
+
+    <arg name="point3_x" value="0.0" />
+    <arg name="point3_y" value="0.0" />
+    <arg name="point3_z" value="1.0" /> -->
+    
+  </include>
+
+  <!-- Start rviz -->
+  <!-- <node name="rviz" pkg="rviz" type="rviz" output="screen"
+       args="-d $(find plan_manage)/launch/rviz_config/exp.rviz"> 
+  </node> -->
+
+  <!-- Mannual mode -->
+  <node pkg="waypoint_generator" name="waypoint_generator" type="waypoint_generator" output="screen">
+    <remap from="~goal"           to="/goal"/>
+    <param name="waypoint_type"   value="manual-lonely-waypoint"/>     
+  </node>
+
+</launch>
