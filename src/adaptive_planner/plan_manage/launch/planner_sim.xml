@@ -172,7 +172,7 @@
   
     <param name="optimization/alpha1" value="5.0"   type="double"/>         <!-- fs   : similarity of the reference traj -->
     <param name="optimization/alpha2" value="0.001"  type="double"/>         <!-- fvthe: progress value -->
-    <param name="optimization/alpha3" value="0.0"  type="double"/>          <!-- fv   : velocity directioin depend panelty -->
+    <param name="optimization/alpha3" value="0.1"  type="double"/>          <!-- fv   : velocity directioin depend panelty -->
     <param name="optimization/alpha4" value="10.0"   type="double"/>         <!-- fc   : distance to obstacle -->
     <param name="optimization/alpha5" value="100.0" type="double"/>         <!-- ftheta: the penalty of theta  -->
     <param name="optimization/alpha6" value="100.0" type="double"/>         <!-- fvel facc: the penalty of vel and acc -->
