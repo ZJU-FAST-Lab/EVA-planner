@@ -35,7 +35,33 @@ cd EVA-planner
 catkin_make
 ```
 
-## 3. Run a simple example.
+## 3. Use GPU or not
+Packages in this repo, local_sensing have GPU, CPU two different versions. By default, they are in CPU version for better compatibility. By changing
+ ```
+ set(ENABLE_CUDA false)
+ ```
+in the _CMakeList.txt_ in **local_sensing** packages, to
+ ```
+ set(ENABLE_CUDA true)
+ ```
+
+CUDA will be turned-on to generate depth images as a real depth camera does. 
+
+Please remember to also change the 'arch' and 'code' flags in the line of 
+```
+    set(CUDA_NVCC_FLAGS 
+      -gencode arch=compute_61,code=sm_61;
+    ) 
+``` 
+in _CMakeList.txt_, if you encounter compiling error due to different Nvidia graphics card you use. You can check the right code [here](https://github.com/tpruvot/ccminer/wiki/Compatibility).
+ 
+Don't forget to re-compile the code!
+
+**local_sensing** is the simulated sensors. If ```ENABLE_CUDA``` **true**, it mimics the depth measured by stereo cameras and renders a depth image by GPU. If ```ENABLE_CUDA``` **false**, it will publish pointclouds with no ray-casting. Our local mapping module automatically selects whether depth images or pointclouds as its input.
+
+For installation of CUDA, please go to [CUDA ToolKit](https://developer.nvidia.com/cuda-toolkit)
+
+## 4. Run a simple example.
 ```
 source devel/setup.bash
 roslaunch plan_manage simulation.launch
