@@ -3,7 +3,7 @@
 **EVA**-planner: an **E**n**V**ironmental **A**daptive Gradient-based Local Planner for Quadrotors.
 
 ## 0. Overview
-**Author**: Lun Quan, Zhiwei Zhang, Xingguang Zhong, Chao Xu and [Fei Gao](https://ustfei.com/) from [ZJU FAST Lab](http://www.kivact.com/).
+**Author**: Lun Quan, Zhiwei Zhang, Xingguang Zhong, Chao Xu and [Fei Gao](https://ustfei.com/) from [ZJU FAST Lab](http://zju-fast.com/).
 
 **Related Paper**: [EVA-Planner: Environmental Adaptive Quadrotor Planning, Lun Quan, Zhiwei Zhang, Chao Xu and Fei Gao](http://arxiv.org/abs/2011.04246) accepted by ICRA 2021.
 
