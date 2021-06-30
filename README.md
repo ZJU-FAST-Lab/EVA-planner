@@ -25,11 +25,13 @@
 sudo apt-get install libarmadillo-dev
 ```
 
-**Step 2**. Clone the code from github.
+**Step 2**. We use [NLopt](https://nlopt.readthedocs.io/en/latest/NLopt_Installation/) to solve the non-linear optimization problem. Please follow the Installation process in NLopt Documentation.
+
+**Step 3**. Clone the code from github.
 ```
 git clone https://github.com/ZJU-FAST-Lab/EVA-planner.git
 ```
-**Step 3**. Compile.
+**Step 4**. Compile.
 ```
 cd EVA-planner
 catkin_make
