@@ -5,7 +5,7 @@
 ## 0. Overview
 **Author**: Lun Quan, Zhiwei Zhang, Xingguang Zhong, Chao Xu and [Fei Gao](https://ustfei.com/) from [ZJU FAST Lab](http://zju-fast.com/).
 
-**Related Paper**: [EVA-Planner: Environmental Adaptive Quadrotor Planning, Lun Quan, Zhiwei Zhang, Chao Xu and Fei Gao](http://arxiv.org/abs/2011.04246) accepted by ICRA 2021.
+**Related Paper**: [EVA-Planner: Environmental Adaptive Quadrotor Planning, Lun Quan, Zhiwei Zhang, Chao Xu and Fei Gao](https://ieeexplore.ieee.org/document/9561759) accepted by 2021 IEEE International Conference on Robotics and Automation (ICRA).
 
 **Video Links**: [Google](https://www.youtube.com/watch?v=HcwBNcah0eo&t=4s), [Bilibili](https://www.bilibili.com/video/BV1Zz4y1C7rt)(for Mainland China)
 
