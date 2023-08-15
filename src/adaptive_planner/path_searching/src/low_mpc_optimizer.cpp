@@ -99,7 +99,7 @@ void low_mpc_planner::setInitial(Vector3d start_pt,vector<Vector3d> local_path){
     for (int i = 0; i< N_-1; i++){
         input_x_(i) = (state_x_(i+1) - state_x_(i)) / Ts_;
         input_y_(i) = (state_y_(i+1) - state_y_(i)) / Ts_;
-        input_x_(i) = (state_z_(i+1) - state_z_(i)) / Ts_;
+        input_z_(i) = (state_z_(i+1) - state_z_(i)) / Ts_;
     }
 
     // initial reference path
