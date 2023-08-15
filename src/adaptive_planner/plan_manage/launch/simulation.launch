@@ -22,12 +22,12 @@
     <!-- depth topic: depth image, 640x480 by default -->
     <!-- don't set cloud_topic if you already set these ones! -->
     <arg name="camera_pose_topic" value="/pcl_render_node/camera_pose"/>
-    <arg name="depth_topic" value="/pcl_render_node/depth"/>
+<!--     <arg name="depth_topic" value="/pcl_render_node/depth"/> -->
 
     <!-- topic of point cloud measurement, such as from LIDAR  -->
     <!-- don't set camera pose and depth, if you already set this one! -->
     <!-- <arg name="cloud_topic" value="/map_generator/global_cloud"/> -->
-    <!-- <arg name="cloud_topic" value="/pcl_render_node/cloud"/> -->
+    <arg name="cloud_topic" value="/pcl_render_node/cloud"/>
 
     <!-- intrinsic params of the depth camera -->
     <arg name="cx" value="321.8554382324219"/>
@@ -94,8 +94,8 @@
     <param name="map/if_alternate_map" value="false"/>
     
     <param name="ObstacleShape/seed" value="1"/>
-    <param name="map/obs_num"    value="40"/>
-    <param name="ObstacleShape/lower_rad" value="0.7"/>
+    <param name="map/obs_num"    value="50"/>
+    <param name="ObstacleShape/lower_rad" value="1.7"/>
     <param name="ObstacleShape/upper_rad" value="0.5"/>
     <param name="ObstacleShape/lower_hei" value="0.0"/>
     <param name="ObstacleShape/upper_hei" value="3.0"/>        
@@ -143,15 +143,15 @@
 
   <node pkg="odom_visualization" name="odom_visualization" type="odom_visualization" output="screen">
         <remap from="~odom" to="/visual_slam/odom"/>
-        <param name="color/a" value="1.0"/>    
-        <param name="color/r" value="0.0"/>        
-        <param name="color/g" value="0.0"/>        
-        <param name="color/b" value="1.0"/>       
-        <param name="covariance_scale" value="100.0"/>       
+        <param name="color/a" value="1.0"/>
+        <param name="color/r" value="0.0"/>
+        <param name="color/g" value="0.0"/>
+        <param name="color/b" value="1.0"/>
+        <param name="covariance_scale" value="100.0"/>
         <param name="robot_scale" value="1.0"/>
   </node>
 
-  <!-- Map Info Render -->
+<!--   Map Info Render -->
   <node pkg="local_sensing_node" type="pcl_render_node" name="pcl_render_node" output="screen">
         <rosparam command="load" file="$(find local_sensing_node)/params/camera.yaml" />
         <param name="sensing_horizon"  value="5.0" />
