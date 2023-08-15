@@ -79,7 +79,7 @@ public:
     ~high_mpcc_optimizer(){};
 
     /* main API */
-    void resetInputInital();
+    void resetInputInitial();
     void setEnvironment(const EDTEnvironment::Ptr& env);
     void setParam(ros::NodeHandle& nh);
     std::vector<std::vector<Eigen::Vector3d>> mpccOptimizeTraj(Eigen::Matrix3d start_state,

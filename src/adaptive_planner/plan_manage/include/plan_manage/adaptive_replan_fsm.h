@@ -39,7 +39,7 @@ private:
   	FSM_EXEC_STATE exec_state_;
 	double mpc_delta_T_;		// the delta T of each horizon in mpc
 	double mpcc_opt_;			// optimization time of high mpcc
-	ros::Time tMpc1_ , tMpc2_, tMpc1_lst_;	// tMpc1_: the moment that generate mpcc,	tMpc2_: the moment that prapare to generate mpcc
+	ros::Time tMpc1_ , tMpc2_, tMpc1_lst_;	// tMpc1_: the moment that generate mpcc,	tMpc2_: the moment that prepare to generate mpcc
 	bool if_adaptive_;
 	std::vector<Eigen::Vector3d> high_mpcc_traj_pos_, high_mpcc_traj_vel_, high_mpcc_traj_acc_;
 	double T_max_lowmpc_, T_max_highmpcc_; 

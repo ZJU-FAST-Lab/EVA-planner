@@ -5,7 +5,7 @@ namespace adaptive_planner{
 
 AdaptivePlannerManager::AdaptivePlannerManager(){}
 
-AdaptivePlannerManager::~AdaptivePlannerManager(){ std::cout << "des manager" << std::endl; }
+AdaptivePlannerManager::~AdaptivePlannerManager(){ std::cout << "destroy manager" << std::endl; }
 
 void AdaptivePlannerManager::initPlanModules(ros::NodeHandle& nh){
     nh.param("fsm/safety_dist",   safety_dist_, 0.1);
@@ -15,6 +15,7 @@ void AdaptivePlannerManager::initPlanModules(ros::NodeHandle& nh){
     edt_environment_.reset(new EDTEnvironment);
     edt_environment_->setParam(nh);
     edt_environment_->setMap(sdf_map_);
+
     // init path searching
     path_finder_.reset(new Astar);
     path_finder_->setParam(nh);
@@ -57,16 +58,16 @@ bool AdaptivePlannerManager::HighMpcc(Eigen::Matrix3d start_state, bool if_adapt
     return true;
 }
 
-void AdaptivePlannerManager::resetMPCCinitial(){
-    high_mpcc_optimizer_->resetInputInital();
+void AdaptivePlannerManager::resetMpccInitial(){
+    high_mpcc_optimizer_->resetInputInitial();
 }
 
 bool AdaptivePlannerManager::safeCheck(){
-    std::vector<Eigen::Vector3d> checked_tarj = low_mpc_traj_;
-    int num = checked_tarj.size();
+    std::vector<Eigen::Vector3d> path = low_mpc_traj_;
+    int num = path.size();
     bool if_safe = true;
     for (int i=0;i<num;i++){
-        Eigen::Vector3d pos = checked_tarj[i];
+        Eigen::Vector3d pos = path[i];
         int occupied = sdf_map_->getInflateOccupancy(pos);
         if (occupied == 1){
             if_safe = false;

@@ -28,7 +28,7 @@ void AdaptiveReplanFsm::init(ros::NodeHandle& nh){
       nh.param("fsm/waypoint" + to_string(i) + "_z", waypoints_[i][2], -1.0);
     }
     if (waypoint_num_>=1)
-        waypoint_flag_ = 0;     // if there are some waypoints, then initial the first goal
+        waypoint_flag_ = 0;     // if there are multiple waypoints, then initial the first goal
     
     yaw_0_ << 1.0,0.0;
     /* initialize main modules */
@@ -50,6 +50,8 @@ void AdaptiveReplanFsm::init(ros::NodeHandle& nh){
     if_adaptive_  = true;
     T_max_lowmpc_ = T_max_highmpcc_ = 0.0;
 
+    // MANUAL_TARGET = 1  specify goal using 3D button, very confusing, clear waypoint and insert 3D pose from 3D button
+    // PRESET_TARGET = 2  not sure.
     if (flight_type_ == TARGET_TYPE::MANUAL_TARGET){
         waypoint_sub_ = nh.subscribe("/waypoint_generator/waypoints", 1, &AdaptiveReplanFsm::waypointCallback, this);
     } else if (flight_type_ == TARGET_TYPE::PRESET_TARGET){
@@ -66,20 +68,14 @@ void AdaptiveReplanFsm::init(ros::NodeHandle& nh){
 }
 
 void AdaptiveReplanFsm::waypointCallback(const nav_msgs::PathConstPtr& msg){
+    // verify waypoints given in launch file
     if (msg->poses[0].pose.position.z < -0.1) return;
 
-    cout << "Get waypoint!" << endl;
-    // manual target type
+    cout << "Get valid waypoint path!" << endl;
+    // manual target type at fixed height zhl
     end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 1.0;
     visualization_->drawLocalGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
-    planner_manager_->resetMPCCinitial();
-
-    // waypoints target type
-    // if (waypoint_flag_ == 0){
-    //     end_pt_ << waypoints_[0][0], waypoints_[0][1], waypoints_[0][2];
-    //     visualization_->drawLocalGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
-    //     planner_manager_->resetMPCCinitial();
-    // }
+    planner_manager_->resetMpccInitial();
 
     have_target_ = true;
     near_goal_   = false;
@@ -91,8 +87,8 @@ void AdaptiveReplanFsm::triggerCallback(const geometry_msgs::PoseStampedPtr &msg
 
     if (waypoint_flag_ == 0){
         end_pt_ << waypoints_[0][0], waypoints_[0][1], waypoints_[0][2];
-        visualization_->drawLocalGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
-        planner_manager_->resetMPCCinitial();
+        visualization_->drawLocalGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0)); // red dot
+        planner_manager_->resetMpccInitial();
     }
 
     have_target_ = true;
@@ -112,17 +108,6 @@ void AdaptiveReplanFsm::odometryCallback(const nav_msgs::OdometryConstPtr& msg){
     odom_orient_.x() = msg->pose.pose.orientation.x;
     odom_orient_.y() = msg->pose.pose.orientation.y;
     odom_orient_.z() = msg->pose.pose.orientation.z;
-
-    // if need to change the goal
-    // if ((end_pt_-odom_pos_).norm() <= 1.5 && waypoint_flag_!=waypoint_num_-1 && have_trigger_){
-    // if ((end_pt_-odom_pos_).norm() <= 1.5 && waypoint_flag_!=waypoint_num_-1){
-    //     // near a temp goal and need to change to next one
-    //     waypoint_flag_ ++;
-    //     cout << "change the goal num: " << waypoint_flag_ << endl;
-    //     end_pt_ << waypoints_[waypoint_flag_][0], waypoints_[waypoint_flag_][1], waypoints_[waypoint_flag_][2];
-    //     visualization_->drawLocalGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
-    //     callLowMpc();
-    // }
 
     // record history pos and vel
     if (have_target_){
@@ -268,7 +253,7 @@ void AdaptiveReplanFsm::highMpccCallback(const ros::TimerEvent& e){
     double dist = (odom_pos_ - end_pt_).norm();
     if (dist < 0.5){
         cout << "near the goal " << endl;
-        planner_manager_->resetMPCCinitial();
+        planner_manager_->resetMpccInitial();
         draw_history_traj();
         have_low_traj_ = false;
         have_traj_     = false;

@@ -55,7 +55,7 @@ void high_mpcc_optimizer::setParam(ros::NodeHandle& nh){
         B_.block(3*i,0,3,3) = Apow(i);
     }
 
-    resetInputInital();
+    resetInputInitial();
 }
 
 void high_mpcc_optimizer::setEnvironment(const EDTEnvironment::Ptr& env) {
@@ -283,7 +283,7 @@ void high_mpcc_optimizer::setInitialState( Matrix3d start_state,
     theta_lower_ = t+0.4;
 }
 
-void high_mpcc_optimizer::resetInputInital(){
+void high_mpcc_optimizer::resetInputInitial(){
     // initial input
     input_x_ = VectorXd::Zero(N_-1);
     input_y_ = VectorXd::Zero(N_-1);

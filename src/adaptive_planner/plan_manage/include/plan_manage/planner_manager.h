@@ -20,7 +20,7 @@ public:
 	double safety_dist_;
 	bool LowMpc(Eigen::Vector3d start_pt, Eigen::Vector3d end_pt);
 	bool HighMpcc(Eigen::Matrix3d start_state, bool if_adaptive);
-	void resetMPCCinitial();
+	void resetMpccInitial();
 	bool safeCheck();
 
 	void initPlanModules(ros::NodeHandle& nh);

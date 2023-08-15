@@ -23,11 +23,13 @@ void Astar::init()
     map_max = origin_ + map_size_3d_; 
     cout << "global map min: " << map_min.transpose() << endl;
     cout << "global map max: " << map_max.transpose() << endl;
-    
+
+    // map boundary lower
     gl_xl = map_min(0);
     gl_yl = map_min(1);
     gl_zl = map_min(2);
 
+    // map boundary upper
     gl_xu = map_max(0);
     gl_yu = map_max(1);
     gl_zu = map_max(2);
@@ -63,7 +65,8 @@ void Astar::setParam(ros::NodeHandle& nh){
   visited_nodes_vis_pub_ = nh.advertise<visualization_msgs::Marker>("visited_nodes_vis",1);
 
   margin_num_ = ceil(margin_/resolution_);
-  tie_breaker_ = 1 + 1/10000;
+  //  tie_breaker_ = 1 + 1/10000; // zhl this might cause bug
+  tie_breaker_ = 1.0 + 1.0/10000.0;
 }
 
 void Astar::setEnvironment(const SDFMap::Ptr& env) {
@@ -98,33 +101,15 @@ Eigen::Vector3d Astar::coordRounding(const Eigen::Vector3d & coord)
 
 bool Astar::isOccupied(const Eigen::Vector3i & index)
 {
-    Eigen::Vector3d pro_pos;
-    pro_pos = gridIndex2coord(index);
-    double dist = sdf_map->getDistance(pro_pos);
+    Eigen::Vector3d pt3d; //
+    pt3d = gridIndex2coord(index);
+    double dist = sdf_map->getDistance(pt3d);
+    // zhl: cell within in margin_ distance to obstacle are considered as occupied
     if (dist <= margin_){
       return true;
     }else {
       return false;
     }
-    // int is_occupied = 0;
-    // for (int i=-margin_num_;i<=margin_num_;i++)
-    //     for (int j=-margin_num_;j<=margin_num_;j++)
-    //         for (int k=-margin_num_;k<=margin_num_;k++){
-    //             Eigen::Vector3i idx;
-    //             Eigen::Vector3d pos;
-    //             idx << index(0)+i, index(1)+j, index(2)+k;
-    //             pos = gridIndex2coord(idx);
-    //             int occupied = sdf_map->getInflateOccupancy(pos);
-    //             if (occupied == 1){
-    //                 is_occupied = 1;
-    //             }
-    //         }
-    
-    // if (is_occupied == 1){
-    //     return true;
-    // } else{
-    //     return false;
-    // }
 }
 
 inline void Astar::AstarGetSucc(GridNodePtr currentPtr, vector<GridNodePtr> & neighborPtrSets, vector<double> & edgeCostSets)
@@ -142,7 +127,7 @@ inline void Astar::AstarGetSucc(GridNodePtr currentPtr, vector<GridNodePtr> & ne
                 neighborIdx(0) = (currentPtr -> index)(0) + dx;
                 neighborIdx(1) = (currentPtr -> index)(1) + dy;
                 neighborIdx(2) = (currentPtr -> index)(2) + dz;
-
+                // check if neighbors are within the cell map
                 if(    neighborIdx(0) < 0 || neighborIdx(0) >= GLX_SIZE
                     || neighborIdx(1) < 0 || neighborIdx(1) >= GLY_SIZE
                     || neighborIdx(2) < 0 || neighborIdx(2) >= GLZ_SIZE){
@@ -444,69 +429,7 @@ vector<Vector3d> Astar::getLocalPath()
     }
     
     return local_path;
-
-    // get the local path
-    // Vector3d start = path[0];
-    // Vector3d local_min, local_max;
-    // vector<Vector3d> local_path;
-    // local_min(0) = start(0) - local_margin_;
-    // local_min(1) = start(1) - local_margin_;
-    // local_min(2) = 0.0;
-    // local_max(0) = start(0) + local_margin_;
-    // local_max(1) = start(1) + local_margin_;
-    // local_max(2) = 3.0;
-
-    // int num = path.size();
-    // local_path.push_back(path[0]);
-    // for (int i = 1; i < num ; i++){
-    //     Vector3d pos = path[i];
-    //     if ( pos(0) < local_min(0) || pos(0) > local_max(0) ||
-    //          pos(1) < local_min(1) || pos(1) > local_max(1) ||
-    //          pos(2) < local_min(2) || pos(2) > local_max(2) )
-    //     {
-    //         break;
-    //     }else
-    //     {
-    //         local_path.push_back(pos);
-    //     }
-    // }
-    // // cout <<"get local path , the local path size : " << local_path.size() << endl;
-
-    // // simplify the local path
-    // vector<Vector3d> local_path_simple;
-    // local_path_simple = pathSimplify(local_path);
-    // // cout <<"get local simple path , the local simple path size : " << local_path_simple.size() << endl;
-    
-
-    // // get the normalized path
-    // vector<Vector3d> local_path_normalized;
-    // Vector3d pos;
-    // pos = local_path_simple[0]; 
-    // local_path_normalized.push_back(pos);
-    // int simple_size = local_path_simple.size();
-    // for (int i=1; i<simple_size; i++){
-    //     Vector3d pos_L, pos_R,direction;
-    //     pos_L = local_path_simple[i-1];
-    //     pos_R = local_path_simple[i];
-    //     direction = pos_R - pos_L;
-    //     double dist = direction.norm();
-    //     int num = round(dist / resolution_);
-    //     double delta_x, delta_y, delta_z;
-    //     delta_x = direction(0) / num;
-    //     delta_y = direction(1) / num;
-    //     delta_z = direction(2) / num;
-    //     Vector3d delta;
-    //     delta << delta_x, delta_y, delta_z; 
-    //     for (int i=0; i<num; i++){
-    //         Vector3d pos;
-    //         pos = pos_L + (i+1) * delta;
-    //         local_path_normalized.push_back(pos);
-    //     }
-    //     local_path_normalized.push_back(pos_R);      
-    // }
-
-    // return local_path_normalized;
-} 
+}
 
 vector<Vector3d> Astar::pathSimplify(const vector<Vector3d> &path)
 {
