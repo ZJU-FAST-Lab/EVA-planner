@@ -145,7 +145,7 @@ if __name__ == "__main__":
                 rospy.Duration(0.5), converter.path_pub_callback)
 
             index += 1
-        except KeyError, e:
+        except KeyError as e:
             if index == 0:
                 raise(KeyError(e))
             else:
