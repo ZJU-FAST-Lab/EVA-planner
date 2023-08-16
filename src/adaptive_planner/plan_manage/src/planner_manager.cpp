@@ -33,12 +33,11 @@ void AdaptivePlannerManager::initPlanModules(ros::NodeHandle& nh){
 
 bool AdaptivePlannerManager::LowMpc(Eigen::Vector3d start_pt, Eigen::Vector3d end_pt){
     // global path search
-    int status = path_finder_->search(start_pt,end_pt);
-    if (status == 1){
-        // get the local normalized path
-        ros::Time t_s = ros::Time::now();
-        local_path_  = path_finder_->getLocalPath();
+    auto planning_result = path_finder_->search(start_pt,end_pt);
 
+    if (planning_result == Astar::PlanningStatus::SUCCESS){
+        // get the local normalized path
+        local_path_  = path_finder_->getLocalPath();
         // low mpc optimization
         low_mpc_traj_  = low_mpc_planner_->lowMpcOptimization(start_pt, local_path_);
         return true;

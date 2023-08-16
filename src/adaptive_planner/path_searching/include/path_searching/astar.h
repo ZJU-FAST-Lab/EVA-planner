@@ -53,6 +53,8 @@ namespace adaptive_planner {
         GridNodePtr ***GridNodeMap; // like 3d array holding GridNodePtr
         Eigen::Vector3i goalIdx;
         GridNodePtr terminatePtr;
+        // using double as the key type for fval of A* nodes, which means the keys will be sorted in ascending order by default.
+        // this is our priority queue
         std::multimap<double, GridNodePtr> openSet;  // dictionary holding (fval, nodeptr)
 
         /* ---------- record data ---------- */
@@ -75,9 +77,9 @@ namespace adaptive_planner {
         Eigen::Vector3d map_min, map_max;
         Eigen::Vector3d local_min_, local_max_;
 
-        int GLX_SIZE, GLY_SIZE, GLZ_SIZE; // cell map size in x, y, z dimension
+        int GLX_SIZE, GLY_SIZE, GLZ_SIZE;   // cell map size in x, y, z dimension
         int GLXYZ_SIZE, GLYZ_SIZE;
-        double gl_xl, gl_yl, gl_zl; // cell map origin in meter
+        double gl_xl, gl_yl, gl_zl;         // cell map origin in meter
         double gl_xu, gl_yu, gl_zu;
 
         /* heuristic function */
@@ -99,16 +101,14 @@ namespace adaptive_planner {
 
         ~Astar();
 
-        enum {
-            REACH_END = 1, NO_PATH = 2
-        };
+        enum PlanningStatus{SUCCESS, FAILED};
 
         /* main API */
         void setParam(ros::NodeHandle &nh);
 
         void init();
 
-        int search(Eigen::Vector3d start_pt, Eigen::Vector3d end_pt);
+        PlanningStatus search(Eigen::Vector3d start_pt, Eigen::Vector3d end_pt);
 
         void setEnvironment(const SDFMap::Ptr &env);
 
