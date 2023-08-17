@@ -77,8 +77,7 @@ private:
 	void triggerCallback(const geometry_msgs::PoseStampedPtr &msg);
   	void odometryCallback(const nav_msgs::OdometryConstPtr& msg);
 	void joyCallback(const sensor_msgs::Joy::ConstPtr& msg);
-	void drawCmd(const Eigen::Vector3d& pos, const Eigen::Vector3d& vec, const int& id,
-                 const Eigen::Vector4d& color);
+	void drawCmd(const Eigen::Vector3d& pos, const Eigen::Vector3d& vec, const int& id, const Eigen::Vector4d& color);
 	void draw_history_traj();
 
 	/* helper functions */

@@ -378,32 +378,13 @@ bool AdaptiveReplanFsm::callHighMpcc(Eigen::Matrix3d start_state){
 }
 
 bool AdaptiveReplanFsm::callLowMpc(){
-    // calculate the start pos
-    // if (have_traj_){
-    //     ros::Time temp_t = ros::Time::now();
-    //     double mpc_opt = 0.003;
-    //     double t = (temp_t - tMpc1_).toSec() + mpc_opt;
-    //     int k = floor(t/mpc_delta_T_);
-    //     t = t - k * mpc_delta_T_;
-    //     Eigen::Vector3d pos_L, pos_R, vel_L, vel_R, acc_L, acc_R;
-    //     acc_L = planner_manager_->high_mpcc_traj_acc_[k];
-    //     acc_R = planner_manager_->high_mpcc_traj_acc_[k+1];
-    //     vel_L = planner_manager_->high_mpcc_traj_vel_[k];
-    //     vel_R = planner_manager_->high_mpcc_traj_vel_[k+1];
-    //     pos_L = planner_manager_->high_mpcc_traj_pos_[k];
-    //     pos_R = planner_manager_->high_mpcc_traj_pos_[k+1];
-    //     start_pt_(0) = pos_L(0) + vel_L(0) * t + acc_L(0) * t * t / 2 + (acc_R(0) - acc_L(0)) * t * t * t / mpc_delta_T_ / 6;
-    //     start_pt_(1) = pos_L(1) + vel_L(1) * t + acc_L(1) * t * t / 2 + (acc_R(1) - acc_L(1)) * t * t * t / mpc_delta_T_ / 6;
-    //     start_pt_(2) = pos_L(2) + vel_L(2) * t + acc_L(2) * t * t / 2 + (acc_R(2) - acc_L(2)) * t * t * t / mpc_delta_T_ / 6;
-    // } else{
-    //     start_pt_  = odom_pos_;
-    // }
     start_pt_  = odom_pos_;
     bool plan_path_success = planner_manager_->LowMpc(start_pt_,end_pt_);
     if (plan_path_success){
         /* visulization */
-        visualization_->drawPath(planner_manager_->local_path_, line_width_, Eigen::Vector4d(0, 0, 1, 1.0));
-        visualization_->drawLowMpcTraj(planner_manager_->low_mpc_traj_,0.1, Eigen::Vector4d(0, 1, 0, 1.0));
+        visualization_->drawPath(planner_manager_->global_path_, 2.0 * line_width_, Eigen::Vector4d(0, 0, 0, 0.8), 7, 10);   // black
+        visualization_->drawPath(planner_manager_->local_path_, line_width_, Eigen::Vector4d(0, 0, 1, 1.0), 0, 1);    // blue
+        visualization_->drawLowMpcTraj(planner_manager_->low_mpc_traj_,0.1, Eigen::Vector4d(0, 1, 0, 1.0));      // green
         have_low_traj_ = true;
         return true;
     }

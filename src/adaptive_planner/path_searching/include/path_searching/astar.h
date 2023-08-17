@@ -116,7 +116,7 @@ namespace adaptive_planner {
 
         std::vector<Eigen::Vector3d> getPath();
 
-        std::vector<Eigen::Vector3d> getLocalPath();
+        std::vector<Eigen::Vector3d> getLocalPath(const vector<Eigen::Vector3d> &path);
 
         std::vector<Eigen::Vector3d> getVisitedNodes();
 

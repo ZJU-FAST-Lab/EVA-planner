@@ -36,8 +36,10 @@ bool AdaptivePlannerManager::LowMpc(Eigen::Vector3d start_pt, Eigen::Vector3d en
     auto planning_result = path_finder_->search(start_pt,end_pt);
 
     if (planning_result == Astar::PlanningStatus::SUCCESS){
-        // get the local normalized path
-        local_path_  = path_finder_->getLocalPath();
+        // get global path from geometric planner
+        global_path_ = path_finder_->getPath();
+        // simplify, normalize and truncate to get local path
+        local_path_  = path_finder_->getLocalPath(global_path_);
         // low mpc optimization
         low_mpc_traj_  = low_mpc_planner_->lowMpcOptimization(start_pt, local_path_);
         return true;

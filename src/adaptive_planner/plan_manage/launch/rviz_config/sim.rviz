@@ -54,6 +54,14 @@ Visualization Manager:
       Displays:
         - Class: rviz/Marker
           Enabled: true
+          Marker Topic: /planning_vis/global_path
+          Name: global_path
+          Namespaces:
+            {}
+          Queue Size: 100
+          Value: true
+        - Class: rviz/Marker
+          Enabled: true
           Marker Topic: /planning_vis/path
           Name: path
           Namespaces:
@@ -252,9 +260,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 1.0047966241836548
+      Pitch: 0.9997965693473816
       Target Frame: <Fixed Frame>
-      Yaw: 3.1979525089263916
+      Yaw: 3.467946767807007
     Saved:
       - Class: rviz/Orbit
         Distance: 79.24484252929688

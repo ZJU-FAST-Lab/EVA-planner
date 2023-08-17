@@ -5,8 +5,8 @@ namespace adaptive_planner{
 PlanningVisualization::PlanningVisualization(ros::NodeHandle& nh){
     node = nh;
 
-    path_pub                = node.advertise<visualization_msgs::Marker>("/planning_vis/path",20);                    // 0
-    pubs_.push_back(path_pub);
+    path_pub_                = node.advertise<visualization_msgs::Marker>("/planning_vis/path", 20);                  // 0
+    pubs_.push_back(path_pub_);
     low_mpc_traj_pub_       = node.advertise<visualization_msgs::Marker>("/planning_vis/low_mpc_traj", 20);           // 1
     pubs_.push_back(low_mpc_traj_pub_);
     local_goal_pub_         = node.advertise<visualization_msgs::Marker>("/planning_vis/local_goal", 20);             // 2
@@ -19,6 +19,11 @@ PlanningVisualization::PlanningVisualization(ros::NodeHandle& nh){
     pubs_.push_back(pos_cmd_pub_);
     exected_traj_pub_       = node.advertise<visualization_msgs::Marker>("/travel_traj", 20);                         // 6
     pubs_.push_back(exected_traj_pub_);
+
+    global_path_pub_       = node.advertise<visualization_msgs::Marker>("/planning_vis/global_path", 20);             // 7
+    pubs_.push_back(global_path_pub_);
+
+
 }
 
 void PlanningVisualization::displaySphereList(const vector<Eigen::Vector3d>& list, double resolution,
@@ -201,15 +206,30 @@ void PlanningVisualization::drawPosCmd(const Eigen::Vector3d& pos, const Eigen::
   pubs_[5].publish(mk);
 }
 
+
+
+//     publish topic                       // pub id
+//    /planning_vis/path                   // 0
+//    /planning_vis/low_mpc_traj           // 1
+//    /planning_vis/local_goal             // 2
+//    /planning_vis/high_mpcc_traj         // 3
+//    /planning_vis/high_mpcc_ref_traj"    // 4
+//    /planning_vis/pos_cmd_vis            // 5
+//    /travel_traj                         // 6
+
+//    /planning_vis/global_path            // 7
+
+
+
 void PlanningVisualization::drawGoal(Eigen::Vector3d goal, double resolution,
                                      const Eigen::Vector4d& color, int id) {
   vector<Eigen::Vector3d> goal_vec = { goal };
   displaySphereList(goal_vec, resolution, color, 1);
 }
 
-void PlanningVisualization::drawPath(const vector<Eigen::Vector3d>& path, double line_width,
-                                     const Eigen::Vector4d& color, int id){
-  displayLineStrip(path, line_width, color, 1);
+
+void PlanningVisualization::drawPath(const vector<Eigen::Vector3d>& path, double line_width, const Eigen::Vector4d& color, int pub_id, int id){
+  displayLineStrip(path, line_width, color, id, pub_id);
 }
 
 void PlanningVisualization::drawLocalGoal(Eigen::Vector3d local_goal, double resolution,

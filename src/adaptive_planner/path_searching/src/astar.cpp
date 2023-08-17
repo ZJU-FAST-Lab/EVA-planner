@@ -189,7 +189,6 @@ Astar::PlanningStatus Astar::search(Vector3d start_pt, Vector3d end_pt)
     ros::Time time_1 = ros::Time::now();  
 
     ++ rounds_;
-    // cout << "astar num:  " << rounds_ << endl;  
 
     //index of start_point and end_point
     Vector3i start_idx = coord2gridIndex(start_pt);
@@ -369,32 +368,17 @@ vector<Vector3d> Astar::getPath()
     return path;
 }
 
-vector<Vector3d> Astar::getLocalPath()
+vector<Vector3d> Astar::getLocalPath(const vector<Vector3d> &path)
 {
-    vector<Vector3d> path;
-    vector<GridNodePtr> gridPath;
+    /* Get truncated normalized path from A* planner
+     * 1. rewire the path, removing waypoint within straight line that is collision free
+     * 2. normalize path so that consecutive segment has equal length
+     * */
 
-    // trace back from the current nodePtr to get all nodes along the path
-    gridPath.push_back(terminatePtr);
-    auto currentPtr = terminatePtr;
-    while(currentPtr->cameFrom != NULL){
-        currentPtr = currentPtr ->cameFrom;
-        gridPath.push_back(currentPtr);
-    }
+    // simplify the path by reducing the number of waypoints while still maintaining the path's feasibility.
+    auto path_simple = pathSimplify(path);
 
-    for (auto ptr: gridPath)
-        path.push_back(ptr->coord);
-        
-    reverse(path.begin(),path.end());
-    // cout <<"get path , the path size : " << path.size() << endl;
-
-    // simplify the path
-    vector<Vector3d> path_simple;
-
-    // function is called to simplify the path and reduce the number of waypoints while still maintaining the path's feasibility.
-    path_simple = pathSimplify(path);
-
-    // get the normalized path, with new waypoints separated by equal distance
+    // get the normalized path, with new consecutive waypoints separated by equal distance
     vector<Vector3d> path_normalized;
     path_normalized.push_back(path_simple[0]);
 
