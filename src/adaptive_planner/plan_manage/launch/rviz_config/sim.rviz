@@ -53,13 +53,13 @@ Visualization Manager:
     - Class: rviz/Group
       Displays:
         - Class: rviz/Marker
-          Enabled: false
+          Enabled: true
           Marker Topic: /planning_vis/path
           Name: path
           Namespaces:
-            {}
+            "": true
           Queue Size: 100
-          Value: false
+          Value: true
         - Class: rviz/Marker
           Enabled: false
           Marker Topic: /planning_vis/high_mpcc_traj
@@ -236,7 +236,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 35.55645751953125
+      Distance: 52.034820556640625
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -252,9 +252,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9997968673706055
+      Pitch: 1.0047966241836548
       Target Frame: <Fixed Frame>
-      Yaw: 3.042952299118042
+      Yaw: 3.1979525089263916
     Saved:
       - Class: rviz/Orbit
         Distance: 79.24484252929688
