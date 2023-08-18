@@ -152,30 +152,12 @@ namespace adaptive_planner {
         // choose possible heuristic function you want
         // Manhattan, Euclidean, Diagonal, or 0 (Dijkstra)
         // http://theory.stanford.edu/~amitp/GameProgramming/Heuristics.html
-        double dx = abs(node1->index(0) - node2->index(0));
-        double dy = abs(node1->index(1) - node2->index(1));
-        double dz = abs(node1->index(2) - node2->index(2));
+        int dx = abs(node1->index(0) - node2->index(0));
+        int dy = abs(node1->index(1) - node2->index(1));
+        int dz = abs(node1->index(2) - node2->index(2));
 
-        double h = 0.0;
-        int diag = min(min(dx, dy), dz);
-        dx -= diag;
-        dy -= diag;
-        dz -= diag;
+        double h = 1.0 * (dx + dy + dz);
 
-        double D3 = sqrt(3.0);
-        double D2 = sqrt(2.0);
-        double D1 = 1.0;
-
-
-        if (dx == 0) {
-            h = 1.0 * D3 * diag + D2 * min(dy, dz) + D1 * abs(dy - dz);
-        }
-        if (dy == 0) {
-            h = 1.0 * D3 * diag + D2 * min(dx, dz) + D1 * abs(dx - dz);
-        }
-        if (dz == 0) {
-            h = 1.0 * D3 * diag + D2 * min(dx, dy) + D1 * abs(dx - dy);
-        }
         // this is strange, if none of dx, dy, dz equal 0, then h = 0.0? //zhl
         // correct way? https://stackoverflow.com/questions/53116475/calculating-diagonal-distance-in-3-dimensions-for-a-path-finding-heuristic
         return tie_breaker_ * h;
@@ -185,12 +167,11 @@ namespace adaptive_planner {
     Astar3d::PlanningStatus Astar3d::search(Vector3d start_pt, Vector3d end_pt) {
         std::lock_guard<std::mutex> guard(lock);
         ros::Time time_1 = ros::Time::now();
-
+        // must rest node graph status
         for (int i = 0; i < GLX_SIZE; i++) {
             for (int j = 0; j < GLY_SIZE; j++) {
                 for (int k = 0; k < GLZ_SIZE; k++) {
                     GridNodeMap[i][j][k]->id = 0;
-                    GridNodeMap[i][j][k]->rounds = 0;
                 }
             }
         }
@@ -217,7 +198,6 @@ namespace adaptive_planner {
         GridNodePtr neighborPtr = NULL;
 
         //put start node in open set
-        startPtr->rounds = rounds_;
         startPtr->gScore = 0;
         startPtr->fScore = getHeu(startPtr, endPtr);
         startPtr->id = 1;
@@ -286,14 +266,11 @@ namespace adaptive_planner {
                 // TODO ZHL, why not just use id == 0 to determine whether the node has been explored
                 // TODO ZHL, here rounds_ == 1 is a const and new add neighbors with rounds = 0//
                 //  so unvisited new neighbors are not explored
-                // bool flag_explored = (neighborPtr->rounds == rounds_);
 
                 // TODO ZHL, the logic here can be simplified as neighborPtr -> id == -1
                 if (neighborPtr->id == -1) {
                     continue;    //in closed set
                 }
-
-                neighborPtr->rounds = rounds_;
 
                 // remove neighbors in inflated obstacle space
                 if (isOccupied(neighborPtr->index)) continue;
@@ -503,8 +480,7 @@ please write your code below
         for (int i = 0; i < GLX_SIZE; i++)
             for (int j = 0; j < GLY_SIZE; j++)
                 for (int k = 0; k < GLZ_SIZE; k++) {
-                    //if(GridNodeMap[i][j][k]->id != 0) // visualize all nodes in open and close list
-                    if (GridNodeMap[i][j][k]->id == -1 && GridNodeMap[i][j][k]->rounds == rounds_)  // visualize nodes in close list only
+                    if(GridNodeMap[i][j][k]->id != 0) // visualize all nodes in open or closed set
                         visited_nodes.push_back(GridNodeMap[i][j][k]->coord);
                 }
 

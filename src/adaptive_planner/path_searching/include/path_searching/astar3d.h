@@ -19,8 +19,7 @@ namespace adaptive_planner {
     typedef GridNode* GridNodePtr; // a type alias (GridNodePtr) for GridNode pointer,
 
     struct GridNode {
-        int rounds = 0;
-        int id = 0;        // 1--> open set, -1 --> closed set, // zhl, 0 maybe unvisited
+        int id = 0;        // 1--> open set, -1 --> closed set, 0 unvisited
 
         Eigen::Vector3i index;
         Eigen::Vector3d coord;
@@ -30,7 +29,6 @@ namespace adaptive_planner {
         std::multimap<double, GridNodePtr>::iterator nodeMapIt;
 
         GridNode(Eigen::Vector3i _index, Eigen::Vector3d _coord) {
-            rounds = 0;
             id = 0;
             index = _index;
             coord = _coord;
@@ -55,7 +53,7 @@ namespace adaptive_planner {
         GridNodePtr terminatePtr;
         // using double as the key type for fval of A* nodes, which means the keys will be sorted in ascending order by default.
         // this is our priority queue
-        std::multimap<double, GridNodePtr> openSet;  // dictionary holding (fval, nodeptr)
+        std::multimap<double, GridNodePtr> openSet;  // dictionary holding (f-val, nodeptr)
 
         /* ---------- record data ---------- */
         SDFMap::Ptr sdf_map;
