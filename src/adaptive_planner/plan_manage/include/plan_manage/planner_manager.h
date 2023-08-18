@@ -4,7 +4,7 @@
 #include <ros/ros.h>
 #include <plan_env/sdf_map.h>
 #include <plan_env/edt_environment.h>
-#include <path_searching/astar.h>
+#include <path_searching/astar3d.h>
 #include <path_searching/low_mpc.h>
 #include <path_searching/high_mpcc_optimizer.h>
 
@@ -35,7 +35,7 @@ private:
   	/* main planning algorithms & modules */
   	SDFMap::Ptr sdf_map_;
 	EDTEnvironment::Ptr edt_environment_;
-	unique_ptr<Astar> path_finder_;
+	unique_ptr<Astar3d> path_finder_;
 	unique_ptr<low_mpc_planner> low_mpc_planner_;
 	unique_ptr<high_mpcc_optimizer> high_mpcc_optimizer_;
 

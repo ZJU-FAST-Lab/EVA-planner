@@ -19,8 +19,8 @@ namespace adaptive_planner {
     typedef GridNode* GridNodePtr; // a type alias (GridNodePtr) for GridNode pointer,
 
     struct GridNode {
-        int rounds;
-        int id;        // 1--> open set, -1 --> closed set, // zhl, 0 maybe unvisited
+        int rounds = 0;
+        int id = 0;        // 1--> open set, -1 --> closed set, // zhl, 0 maybe unvisited
 
         Eigen::Vector3i index;
         Eigen::Vector3d coord;
@@ -46,7 +46,7 @@ namespace adaptive_planner {
         ~GridNode() {};
     };
 
-    class Astar {
+    class Astar3d {
     private:
         /* ---------- main data structure ---------- */
         uint8_t *data;
@@ -71,6 +71,7 @@ namespace adaptive_planner {
         std::vector<Eigen::Vector3d> simplifyPath;
         int rounds_{0};
         int margin_num_;
+        std::mutex lock;
 
         /* map */
         Eigen::Vector3d origin_, map_size_3d_;
@@ -97,9 +98,9 @@ namespace adaptive_planner {
         ros::Publisher visited_nodes_vis_pub_;
 
     public:
-        Astar() {};
+        Astar3d() {};
 
-        ~Astar();
+        ~Astar3d();
 
         enum PlanningStatus{SUCCESS, FAILED};
 
@@ -124,7 +125,7 @@ namespace adaptive_planner {
 
         std::vector<Eigen::Vector3d> pathSimplify(const std::vector<Eigen::Vector3d> &path);
 
-        typedef shared_ptr<Astar> Ptr;
+        typedef shared_ptr<Astar3d> Ptr;
     };
 
 }  // namespace adaptive_planner

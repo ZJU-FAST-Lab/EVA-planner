@@ -133,7 +133,7 @@
     <param name="edt_map/costmap_r"     value="0.2" type="double"/>
     <param name="edt_map/costmap_d"     value="1.0" type="double"/>
     
-    <!-- Astar path searching -->
+    <!-- Astar3d path searching -->
     <param name="astar/resolution_astar" value="0.1"    type="double"/>
     <param name="astar/margin"           value="0.3"    type="double"/>
     <param name="astar/local_margin"     value="10.0"   type="double"/>

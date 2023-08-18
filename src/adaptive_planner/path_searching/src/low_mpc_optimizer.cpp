@@ -109,6 +109,7 @@ void low_mpc_planner::setInitial(Vector3d start_pt,vector<Vector3d> local_path){
 }
 
 void low_mpc_planner::optimize(){
+    std::lock_guard<std::mutex> guard(lock_);
     /* initialize solver */
     iter_num_      = 0;
     min_cost_      = std::numeric_limits<double>::max();

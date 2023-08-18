@@ -38,6 +38,7 @@ private:
     double alpha3_;     // similarity to reference path
     Eigen::VectorXd Gradient_x_, Gradient_y_, Gradient_z_;
 
+    std::mutex lock_;
     int max_iteration_num_, iter_num_;
     double similary_lower_, similary_upper_;
     double max_iteration_time_, min_cost_;

@@ -29,9 +29,10 @@ include_directories(
 )
 
 set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS} -O3 -Wall")
+#set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS} -Wall -g")
 
 add_library( path_searching
-    src/astar.cpp
+        src/astar3d.cpp
     src/low_mpc_optimizer.cpp
     src/high_mpcc_optimizer.cpp
     )

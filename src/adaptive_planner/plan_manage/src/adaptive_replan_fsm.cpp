@@ -75,6 +75,7 @@ void AdaptiveReplanFsm::waypointCallback(const nav_msgs::PathConstPtr& msg){
     // manual target type at fixed height zhl
     end_pt_ << msg->poses[0].pose.position.x, msg->poses[0].pose.position.y, 1.0;
     visualization_->drawLocalGoal(end_pt_, 0.3, Eigen::Vector4d(1, 0, 0, 1.0));
+
     planner_manager_->resetMpccInitial();
 
     have_target_ = true;

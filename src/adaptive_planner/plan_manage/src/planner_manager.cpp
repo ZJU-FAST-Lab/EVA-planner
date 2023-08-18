@@ -17,7 +17,7 @@ void AdaptivePlannerManager::initPlanModules(ros::NodeHandle& nh){
     edt_environment_->setMap(sdf_map_);
 
     // init path searching
-    path_finder_.reset(new Astar);
+    path_finder_.reset(new Astar3d);
     path_finder_->setParam(nh);
     path_finder_->setEnvironment(sdf_map_);
     path_finder_->init();
@@ -35,7 +35,7 @@ bool AdaptivePlannerManager::LowMpc(Eigen::Vector3d start_pt, Eigen::Vector3d en
     // global path search
     auto planning_result = path_finder_->search(start_pt,end_pt);
 
-    if (planning_result == Astar::PlanningStatus::SUCCESS){
+    if (planning_result == Astar3d::PlanningStatus::SUCCESS){
         // get global path from geometric planner
         global_path_ = path_finder_->getPath();
         // simplify, normalize and truncate to get local path
