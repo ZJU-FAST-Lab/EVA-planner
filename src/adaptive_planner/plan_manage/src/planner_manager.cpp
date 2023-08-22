@@ -33,7 +33,7 @@ void AdaptivePlannerManager::initPlanModules(ros::NodeHandle& nh){
 
 bool AdaptivePlannerManager::LowMpc(Eigen::Vector3d start_pt, Eigen::Vector3d end_pt){
     // global path search
-    auto planning_result = path_finder_->search(start_pt,end_pt);
+    auto planning_result = path_finder_->search(start_pt, end_pt);
 
     if (planning_result == Astar3d::PlanningStatus::SUCCESS){
         // get global path from geometric planner

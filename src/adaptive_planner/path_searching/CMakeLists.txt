@@ -4,6 +4,9 @@ project(path_searching)
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
 
+find_package(PkgConfig REQUIRED)
+pkg_search_module(NLOPT REQUIRED nlopt)
+
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
@@ -33,10 +36,16 @@ set(CMAKE_CXX_FLAGS "-std=c++14 ${CMAKE_CXX_FLAGS} -O3 -Wall")
 
 add_library( path_searching
         src/astar3d.cpp
-    src/low_mpc_optimizer.cpp
-    src/high_mpcc_optimizer.cpp
+        src/low_mpc_optimizer.cpp
+        src/high_mpcc_optimizer.cpp
     )
+#target_link_libraries( path_searching
+#    ${catkin_LIBRARIES}
+#    /usr/local/lib/libnlopt.so
+#    )
+
+
 target_link_libraries( path_searching
-    ${catkin_LIBRARIES} 
-    /usr/local/lib/libnlopt.so
-    )  
+    ${catkin_LIBRARIES}
+    nlopt
+    )

@@ -1,12 +1,18 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(traj_utils)
 
+
+
 find_package(catkin REQUIRED COMPONENTS
-  path_searching
+#  path_searching
   roscpp
   std_msgs
   cv_bridge
 )
+
+#
+#find_package(PkgConfig REQUIRED)
+#pkg_search_module(NLOPT REQUIRED nlopt)
 
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
@@ -14,6 +20,7 @@ find_package(PCL REQUIRED)
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES traj_utils
+# CATKIN_DEPENDS path_searching
 #  DEPENDS system_lib
 )
 
