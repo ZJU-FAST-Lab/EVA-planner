@@ -69,7 +69,7 @@ public:
     std::vector<Eigen::Vector3d>  lowMpcOptimization(Eigen::Vector3d start_pt, std::vector<Eigen::Vector3d> local_path);
 
     typedef unique_ptr<low_mpc_planner> Ptr;
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+//    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 }    // namespace adaptive_planner

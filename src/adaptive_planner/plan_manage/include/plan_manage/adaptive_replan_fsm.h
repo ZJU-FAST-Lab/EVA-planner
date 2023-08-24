@@ -42,7 +42,7 @@ private:
 	ros::Time tMpc1_ , tMpc2_, tMpc1_lst_;	// tMpc1_: the moment that generate mpcc,	tMpc2_: the moment that prepare to generate mpcc
 	bool if_adaptive_;
 	std::vector<Eigen::Vector3d> high_mpcc_traj_pos_, high_mpcc_traj_vel_, high_mpcc_traj_acc_;
-	double T_max_lowmpc_, T_max_highmpcc_; 
+	double T_max_lowmpc_, T_max_highmpcc_;
 	bool show_lowmpc_time_, show_highmpcc_time_;
 	Eigen::Vector2d yaw_0_;
 	double yaw_angle_;

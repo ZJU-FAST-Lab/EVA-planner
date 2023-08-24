@@ -48,4 +48,4 @@ add_library( path_searching
 target_link_libraries( path_searching
     ${catkin_LIBRARIES}
     nlopt
-    )
+ )

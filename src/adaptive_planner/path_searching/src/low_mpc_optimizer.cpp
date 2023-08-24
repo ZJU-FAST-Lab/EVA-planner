@@ -78,7 +78,7 @@ void low_mpc_planner::setInitial(Vector3d start_pt,vector<Vector3d> local_path){
     B_ = VectorXd::Zero(N_);
     B_(0) = 1;
     for (int i = 1 ; i < N_ ; i++){
-        for (int j = 0;j < i ; j++){
+        for (int j = 0; j < i ; j++){
             A_(i,j) = Ts_;
         }
         B_(i) = 1;
@@ -87,22 +87,26 @@ void low_mpc_planner::setInitial(Vector3d start_pt,vector<Vector3d> local_path){
     state_x_    = VectorXd::Zero(N_);
     state_y_    = VectorXd::Zero(N_);
     state_z_    = VectorXd::Zero(N_);
+
     for (int i = 0; i < N_; i++){
         Vector3d pos = local_path[i];
         state_x_(i) = pos(0);
         state_y_(i) = pos(1);
         state_z_(i) = pos(2);
     }
+
     input_x_  = VectorXd::Zero(N_-1);
     input_y_  = VectorXd::Zero(N_-1);
     input_z_  = VectorXd::Zero(N_-1);
+
     for (int i = 0; i< N_-1; i++){
         input_x_(i) = (state_x_(i+1) - state_x_(i)) / Ts_;
         input_y_(i) = (state_y_(i+1) - state_y_(i)) / Ts_;
         input_z_(i) = (state_z_(i+1) - state_z_(i)) / Ts_;
     }
 
-    // initial reference path
+    // initial reference path,
+    // zhl: path = local_path
     path_x_ = state_x_;
     path_y_ = state_y_;
     path_z_ = state_z_;
@@ -118,6 +122,7 @@ void low_mpc_planner::optimize(){
     /* do optimization using NLopt slover */
     nlopt::opt opt(nlopt::algorithm::LD_LBFGS, variable_num_); // use the LD_LBFGS optimization method
     opt.set_min_objective(low_mpc_planner::costFunction, this);
+
     opt.set_maxeval(max_iteration_num_);
     opt.set_maxtime(max_iteration_time_);
     opt.set_ftol_rel(1e-4);
@@ -149,7 +154,7 @@ void low_mpc_planner::optimize(){
 double low_mpc_planner::costFunction(const std::vector<double>& x, 
                                      std::vector<double>& grad,
                                      void* func_data){
-    low_mpc_planner* opt = reinterpret_cast<low_mpc_planner*>(func_data);
+    auto opt = reinterpret_cast<low_mpc_planner*>(func_data);
     double cost;
     opt->combineCost(x, grad, cost);
 
@@ -169,6 +174,7 @@ void low_mpc_planner::combineCost(const std::vector<double>& x,
                                   std::vector<double>& grad,  
                                   double& f_combine){
     /* convert the NLopt format vector to control inputs. */
+    // load current input from optimization variable
     for (int i = 0; i < (N_ - 1);i++){
         input_x_(i) = x[i];
     }
@@ -180,15 +186,19 @@ void low_mpc_planner::combineCost(const std::vector<double>& x,
     }
     /*  evaluate costs and their gradient  */
     f_combine = 0.0;
+
     grad.resize(variable_num_);
     fill(grad.begin(), grad.end(), 0.0);
-    // calculate the initial system state
+
+    // calculate all system states from new inputs (x,y,z axis)
     stateEquations();
-    // calculate the initial cost function and gradient
+
+    // calculate cost function and gradient
     calCostFunctionandGradient();
+
     f_combine = f_;
 
-    // convert the gradient to the NLopt format
+    // export new updated gradient to nlopt container
     for (int i = 0; i < (N_ - 1);i++){
         grad[i] = Gradient_x_(i);
     }
@@ -203,16 +213,22 @@ void low_mpc_planner::combineCost(const std::vector<double>& x,
 void low_mpc_planner::calCostFunctionandGradient(){
     // initial intermediate variables
     double fu, fc, fs, dist;
+
     fu = fc = fs = 0.0;
+
     Vector3d pos, path_pos, dist_grad;
+
     VectorXd Gradient_ux, Gradient_uy, Gradient_uz;
     VectorXd Gradient_cx, Gradient_cy, Gradient_cz;
     VectorXd Gradient_sx, Gradient_sy, Gradient_sz;
+
     Gradient_ux = Gradient_uy = Gradient_uz = VectorXd::Zero(N_-1);
     Gradient_cx = Gradient_cy = Gradient_cz = VectorXd::Zero(N_-1);
     Gradient_sx = Gradient_sy = Gradient_sz = VectorXd::Zero(N_-1);
+
+
     for (int i = 0; i<N_; i++){
-        // fu and gradient of fu
+        // fu and gradient of fu, Ju
         if (i < N_-1){
             if (i < N_ -2){
                 fu += pow((input_x_(i+1) - input_x_(i)),2) 
