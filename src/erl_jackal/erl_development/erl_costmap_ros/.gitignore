@@ -1,0 +1,8 @@
+# Build
+build
+debug
+release
+docs
+
+# IDE
+.idea

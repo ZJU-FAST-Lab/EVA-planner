@@ -2,7 +2,12 @@ cmake_minimum_required(VERSION 3.0.2)
 project(path_searching)
 
 find_package(Eigen3 REQUIRED)
-find_package(PCL 1.7 REQUIRED)
+INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
+
+find_package(PCL REQUIRED)
+
+find_package(PkgConfig REQUIRED)
+pkg_search_module(NLOPT REQUIRED nlopt)
 
 find_package(catkin REQUIRED COMPONENTS
   roscpp
@@ -28,7 +33,9 @@ include_directories(
     ${PCL_INCLUDE_DIRS}
 )
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS} -O3 -Wall")
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "-O3 -Wall")
 
 add_library( path_searching
     src/astar.cpp
@@ -36,6 +43,6 @@ add_library( path_searching
     src/high_mpcc_optimizer.cpp
     )
 target_link_libraries( path_searching
-    ${catkin_LIBRARIES} 
-    /usr/local/lib/libnlopt.so
-    )  
+    ${catkin_LIBRARIES}
+    nlopt
+    )

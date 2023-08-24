@@ -1,0 +1,7 @@
+# Request Values
+uint32 add_landmarks
+
+---
+# Response Values
+erl_msgs/GridMap map  # Get grid map as a erl_msgs/GridMap
+erl_msgs/LandmarkMap lm_map # Get Optional Landmark Map as an erl_msgs/LandmarkMap

@@ -1,0 +1,12 @@
+# Teleop configuration for PS4 joystick using the x-pad configuration.
+teleop_twist_joy:
+  axis_linear: 1
+  scale_linear: 0.4
+  scale_linear_turbo: 2.0
+  axis_angular: 3           # default 0 (3 is right knob left/right axis zhl)
+  scale_angular: 1.4        # range is [-1, 1], this scale caps angular vel [-1.4, 1.4]
+  enable_button: 4
+  enable_turbo_button: 5
+joy_node:
+  deadzone: 0.1
+  autorepeat_rate: 20

@@ -4,8 +4,8 @@
   <arg name="map_size_z_"/>
 
   <arg name="odometry_topic"/>
-  <arg name="camera_pose_topic"/>
-  <arg name="depth_topic"/>
+<!--  <arg name="camera_pose_topic"/>-->
+<!--  <arg name="depth_topic"/>-->
   <arg name="cloud_topic"/>
 
   <arg name="cx"/>
@@ -45,39 +45,39 @@
     <rosparam file="$(find plan_manage)/config/traj.yaml" command="load" />
     <remap from = "/odom_world"    to = "$(arg odometry_topic)"/>
     <remap from = "/sdf_map/odom"  to = "$(arg odometry_topic)"/>
-    <!-- <remap from = "/sdf_map/cloud" to = "$(arg cloud_topic)"/> -->
+     <remap from = "/sdf_map/cloud" to = "$(arg cloud_topic)"/>
     <remap from = "/position_cmd"  to = "/planning/pos_cmd"/>
     
-    <remap from = "/sdf_map/pose"  to = "$(arg camera_pose_topic)"/> 
-    <remap from = "/sdf_map/depth" to = "$(arg depth_topic)"/>
+<!--    <remap from = "/sdf_map/pose"  to = "$(arg camera_pose_topic)"/> -->
+<!--    <remap from = "/sdf_map/depth" to = "$(arg depth_topic)"/>-->
     
     <!-- fsm replanning -->
     <param name="fsm/flight_type" value="$(arg flight_type)" type="int"/>
-    <param name="fsm/waypoint_num" value="$(arg point_num)" type="int"/>
-    <param name="fsm/waypoint0_x" value="$(arg point0_x)" type="double"/>
-    <param name="fsm/waypoint0_y" value="$(arg point0_y)" type="double"/>
-    <param name="fsm/waypoint0_z" value="$(arg point0_z)" type="double"/>
-    <param name="fsm/waypoint1_x" value="$(arg point1_x)" type="double"/>
-    <param name="fsm/waypoint1_y" value="$(arg point1_y)" type="double"/>
-    <param name="fsm/waypoint1_z" value="$(arg point1_z)" type="double"/>
-    <param name="fsm/waypoint2_x" value="$(arg point2_x)" type="double"/>
-    <param name="fsm/waypoint2_y" value="$(arg point2_y)" type="double"/>
-    <param name="fsm/waypoint2_z" value="$(arg point2_z)" type="double"/>
-    <param name="fsm/waypoint3_x" value="$(arg point3_x)" type="double"/>
-    <param name="fsm/waypoint3_y" value="$(arg point3_y)" type="double"/>
-    <param name="fsm/waypoint3_z" value="$(arg point3_z)" type="double"/>
-    <param name="fsm/waypoint4_x" value="$(arg point4_x)" type="double"/>
-    <param name="fsm/waypoint4_y" value="$(arg point4_y)" type="double"/>
-    <param name="fsm/waypoint4_z" value="$(arg point4_z)" type="double"/>
-    <param name="fsm/waypoint5_x" value="$(arg point5_x)" type="double"/>
-    <param name="fsm/waypoint5_y" value="$(arg point5_y)" type="double"/>
-    <param name="fsm/waypoint5_z" value="$(arg point5_z)" type="double"/>
-    <param name="fsm/waypoint6_x" value="$(arg point6_x)" type="double"/>
-    <param name="fsm/waypoint6_y" value="$(arg point6_y)" type="double"/>
-    <param name="fsm/waypoint6_z" value="$(arg point6_z)" type="double"/>
-    <param name="fsm/waypoint7_x" value="$(arg point7_x)" type="double"/>
-    <param name="fsm/waypoint7_y" value="$(arg point7_y)" type="double"/>
-    <param name="fsm/waypoint7_z" value="$(arg point7_z)" type="double"/>
+<!--    <param name="fsm/waypoint_num" value="$(arg point_num)" type="int"/>-->
+<!--    <param name="fsm/waypoint0_x" value="$(arg point0_x)" type="double"/>-->
+<!--    <param name="fsm/waypoint0_y" value="$(arg point0_y)" type="double"/>-->
+<!--    <param name="fsm/waypoint0_z" value="$(arg point0_z)" type="double"/>-->
+<!--    <param name="fsm/waypoint1_x" value="$(arg point1_x)" type="double"/>-->
+<!--    <param name="fsm/waypoint1_y" value="$(arg point1_y)" type="double"/>-->
+<!--    <param name="fsm/waypoint1_z" value="$(arg point1_z)" type="double"/>-->
+<!--    <param name="fsm/waypoint2_x" value="$(arg point2_x)" type="double"/>-->
+<!--    <param name="fsm/waypoint2_y" value="$(arg point2_y)" type="double"/>-->
+<!--    <param name="fsm/waypoint2_z" value="$(arg point2_z)" type="double"/>-->
+<!--    <param name="fsm/waypoint3_x" value="$(arg point3_x)" type="double"/>-->
+<!--    <param name="fsm/waypoint3_y" value="$(arg point3_y)" type="double"/>-->
+<!--    <param name="fsm/waypoint3_z" value="$(arg point3_z)" type="double"/>-->
+<!--    <param name="fsm/waypoint4_x" value="$(arg point4_x)" type="double"/>-->
+<!--    <param name="fsm/waypoint4_y" value="$(arg point4_y)" type="double"/>-->
+<!--    <param name="fsm/waypoint4_z" value="$(arg point4_z)" type="double"/>-->
+<!--    <param name="fsm/waypoint5_x" value="$(arg point5_x)" type="double"/>-->
+<!--    <param name="fsm/waypoint5_y" value="$(arg point5_y)" type="double"/>-->
+<!--    <param name="fsm/waypoint5_z" value="$(arg point5_z)" type="double"/>-->
+<!--    <param name="fsm/waypoint6_x" value="$(arg point6_x)" type="double"/>-->
+<!--    <param name="fsm/waypoint6_y" value="$(arg point6_y)" type="double"/>-->
+<!--    <param name="fsm/waypoint6_z" value="$(arg point6_z)" type="double"/>-->
+<!--    <param name="fsm/waypoint7_x" value="$(arg point7_x)" type="double"/>-->
+<!--    <param name="fsm/waypoint7_y" value="$(arg point7_y)" type="double"/>-->
+<!--    <param name="fsm/waypoint7_z" value="$(arg point7_z)" type="double"/>-->
     
 
     <param name="fsm/safety_dist" value="0.1"/>
@@ -152,9 +152,9 @@
     <param name="multi_mpcc/show_highmpcc_time" value="false"/> 
     
     <!-- Low MPC -->
-    <param name="low_mpc/alpha1" value="5.0" type="double"/>      <!-- fu: control input -->
-    <param name="low_mpc/alpha2" value="2.0"   type="double"/>      <!-- fc: distance to obstacle -->
-    <param name="low_mpc/alpha3" value="1.0"   type="double"/>      <!-- fs: similarity to reference path -->
+    <param name="low_mpc/alpha_s" value="5.0" type="double"/>      <!-- fu: control input -->
+    <param name="low_mpc/alpha_p" value="2.0"   type="double"/>      <!-- fc: distance to obstacle -->
+    <param name="low_mpc/alpha_e" value="1.0"   type="double"/>      <!-- fs: similarity to reference path -->
 
     <param name="low_mpc/max_iteration_num"   value="200"   type="int"/>
     <param name="low_mpc/max_iteration_time"  value="0.01"  type="double"/>
@@ -170,11 +170,11 @@
     <param name="optimization/dist_0"   value="0.5" type="double"/>         <!-- dist_0 : trajectory safe dist -->>
     <param name="optimization/dist_1"   value="2.0" type="double"/>         <!-- dist_1 : system safe dist -->>
   
-    <param name="optimization/alpha1" value="5.0"   type="double"/>         <!-- fs   : similarity of the reference traj -->
-    <param name="optimization/alpha2" value="0.001"  type="double"/>         <!-- fvthe: progress value -->
-    <param name="optimization/alpha3" value="0.1"  type="double"/>          <!-- fv   : velocity directioin depend panelty -->
-    <param name="optimization/alpha4" value="10.0"   type="double"/>         <!-- fc   : distance to obstacle -->
-    <param name="optimization/alpha5" value="100.0" type="double"/>         <!-- ftheta: the penalty of theta  -->
+    <param name="optimization/alpha_s" value="5.0"   type="double"/>         <!-- fs   : similarity of the reference traj -->
+    <param name="optimization/alpha_p" value="0.001"  type="double"/>         <!-- fvthe: progress value -->
+    <param name="optimization/alpha_e" value="0.1"  type="double"/>          <!-- fv   : velocity directioin depend panelty -->
+    <param name="optimization/alpha_c" value="10.0"   type="double"/>         <!-- fc   : distance to obstacle -->
+    <param name="optimization/alpha_mu" value="100.0" type="double"/>         <!-- ftheta: the penalty of theta  -->
     <param name="optimization/alpha6" value="100.0" type="double"/>         <!-- fvel facc: the penalty of vel and acc -->
     <param name="optimization/alpha7" value="100.0"  type="double"/>         <!-- fjerk: minimum the change of jerk -->
     <param name="optimization/alpha8" value="100.0"  type="double"/>
