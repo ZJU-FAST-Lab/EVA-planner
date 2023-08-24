@@ -1,0 +1,22 @@
+# RVI Configuration
+int8 T  # The Planning Horizon
+float64 epsilon  # The epsilon parameter
+float64 delta  # The delta parameter.
+float64 runtime  # If this is Non-Zero, use the ARVI planner with epsilon and delta initial values.
+float64 inflation_value  # Meters to inflate map by.
+float64 fixed_z # Fixed Z height.
+
+# TODO Add 3D Planning
+# uint8 use_3d # Flag indicating if planning should be done in the voxelized space.
+
+# TODO Add a 3D or other environment type.
+## OPTIONAL FAS Parameters
+# uint8 use_fas # Flag indicating if the Fully Actuated System should be used for planning
+# float64 max_vel # Value for Maximum Velocity. Used only for FAS systems.
+# float64 max_acc # Value for Maximum Accleration. Used only for FAS systems.
+# float64 rho # Rho value for FAS systems.
+# float64 tau # Tau value for FAS systems
+
+---
+# Response Values
+bool success

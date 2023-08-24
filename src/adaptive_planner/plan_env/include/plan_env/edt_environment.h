@@ -23,14 +23,12 @@ private:
   /* data */
   double resolution_inv_;
   double costmap_alpha_, costmap_r_, costmap_d_ ;     // parameters of the cost distance
-  
-  double distToBox(int idx, const Eigen::Vector3d& pos, const double& time);
-  double minDistToAllBox(const Eigen::Vector3d& pos, const double& time);
-  void getSurroundDistance(Eigen::Vector3d pts[2][2][2], double dists[2][2][2]);
-  void getSurroundFirstGrad(Eigen::Vector3d pts[2][2][2], double first_grad[2][2][2][3]);
-  void interpolateTrilinearEDT(double values[2][2][2], const Eigen::Vector3d& diff, double& value);
-  void interpolateTrilinearFirstGrad(double values[2][2][2], const Eigen::Vector3d& diff, Eigen::Vector3d& grad);
-  void interpolateTrilinearSecondGrad(double first_grad[2][2][2][3], const Eigen::Vector3d& diff, Eigen::Vector3d& grad);
+
+  void getSurroundDistance(Eigen::Vector2d pts[2][2], double dists[2][2]);
+  void getSurroundFirstGrad(Eigen::Vector2d pts[2][2], double first_grad[2][2][2]);
+  static void interpolateTrilinearEDT(double values[2][2], const Eigen::Vector2d& diff, double& value);
+  void interpolateTrilinearFirstGrad(double values[2][2], const Eigen::Vector2d& diff, Eigen::Vector2d& grad) const;
+  void interpolateTrilinearSecondGrad(double first_grad[2][2][2], const Eigen::Vector2d& diff, Eigen::Vector2d& grad) const;
   
 public:
   EDTEnvironment() {};
@@ -40,13 +38,13 @@ public:
 
   /* Main API*/
   void setParam(ros::NodeHandle& nh);
-  void setMap(SDFMap::Ptr map);
+  void setMap(SDFMap::Ptr& map);
 
-  void evaluateEDT(const Eigen::Vector3d& pos, double& dist);
-  void evaluateFirstGrad(const Eigen::Vector3d& pos, Eigen::Vector3d& grad);
-  void evaluateSecondGrad(const Eigen::Vector3d& pos, Eigen::Vector3d& grad);
+  void evaluateEDT(const Eigen::Vector2d& pos, double& dist);
+  void evaluateFirstGrad(const Eigen::Vector2d& pos, Eigen::Vector2d& grad);
+  void evaluateSecondGrad(const Eigen::Vector2d& pos, Eigen::Vector2d& grad);
 
-  void getMapRegion(Eigen::Vector3d& ori, Eigen::Vector3d& size) {
+  void getMapRegion(Eigen::Vector2d& ori, Eigen::Vector2d& size) {
     sdf_map_->getRegion(ori, size);
   }
 

@@ -1,0 +1,35 @@
+<launch>
+    
+    <arg name="x" default="0" />
+    <arg name="y" default="0" />
+    <arg name="z" default="0.4" />
+    <arg name="yaw" default="0" />
+    <arg name="world_name" default="$(find jackal_gazebo)/worlds/jackal_race.world" />
+    <!-- <arg name="world_name" default="$(find jackal_gazebo)/worlds/two.world" /> -->
+
+    <!-- Launch Gazebo with the specified world -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="debug" value="0" />
+        <arg name="gui" value="true" />
+        <arg name="use_sim_time" value="true" />
+        <arg name="headless" value="false" />
+        <arg name="world_name" value="$(arg world_name)"/>
+    </include>
+
+
+    <!-- Configuration of Jackal which you would like to simulate. See jackal_description for details. -->
+    <!-- Spawn Jackal -->
+    <include file="$(find jackal_gazebo)/launch/spawn_jackal.launch">
+        <arg name="x" value="$(arg x)" />
+        <arg name="y" value="$(arg y)" />
+        <arg name="z" value="$(arg z)" />
+        <arg name="yaw" value="$(arg yaw)" />
+        <arg name="config" value="ouster_laser" />
+        <arg name="joystick" value="false" />
+        <arg name="enable_ekf" value="false" />
+    </include>
+    
+    <include file="$(find lego_loam)/launch/run.launch">
+    </include>
+
+</launch>

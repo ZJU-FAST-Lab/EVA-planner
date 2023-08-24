@@ -18,11 +18,11 @@ class low_mpc_planner
 private:
     /* record data */
     EDTEnvironment::Ptr edt_map_;
-    Eigen::Vector3d start_pt_, end_pt_;
-    Eigen::VectorXd input_x_, input_y_, input_z_;  // input (v)
-    Eigen::VectorXd state_x_, state_y_, state_z_;  // state of low mpc system
-    Eigen::VectorXd path_x_, path_y_, path_z_;     // reference path 
-    Eigen::Vector3d map_min_, map_max_;
+    Eigen::Vector2d start_pt_, end_pt_;
+    Eigen::VectorXd input_x_, input_y_;  // input (v)
+    Eigen::VectorXd state_x_, state_y_;  // state of low mpc system
+    Eigen::VectorXd path_x_, path_y_;     // reference path
+    Eigen::Vector2d map_min_, map_max_;
     double f_;
     
     /* low mpc setting */
@@ -33,12 +33,11 @@ private:
     Eigen::VectorXd B_;
 
     /* optimization parameters */
-    double alpha1_;     // control input weight
-    double alpha2_;     // distance to obstacle weight
-    double alpha3_;     // similarity to reference path
-    Eigen::VectorXd Gradient_x_, Gradient_y_, Gradient_z_;
+    double alpha_s_;     // control input weight
+    double alpha_p_;     // distance to obstacle weight
+    double alpha_e_;     // similarity to reference path
+    Eigen::VectorXd Gradient_x_, Gradient_y_;
 
-    std::mutex lock_;
     int max_iteration_num_, iter_num_;
     double similary_lower_, similary_upper_;
     double max_iteration_time_, min_cost_;
@@ -46,7 +45,7 @@ private:
     std::vector<double> best_variable_;
     
     /* useful function */
-    void setInitial(Eigen::Vector3d start_pt,std::vector<Eigen::Vector3d> local_path);
+    void setInitial(Eigen::Vector2d& start_pt, std::vector<Eigen::Vector2d>& local_path);
     void optimize();
     static double costFunction(const std::vector<double>& x, 
                                std::vector<double>& grad,
@@ -56,8 +55,6 @@ private:
                      double& f_combine);
     void stateEquations();                             // use the state equations to calculate system states
     void calCostFunctionandGradient();                 // calculate the cost and gradient
-    double calPathRangeCost(double value);
-    double calPathRangeGrad(double value);
 
 public:
     low_mpc_planner(){};
@@ -66,10 +63,10 @@ public:
     /* main API */
     void setEnvironment(const EDTEnvironment::Ptr& env);
     void init(ros::NodeHandle& nh);
-    std::vector<Eigen::Vector3d>  lowMpcOptimization(Eigen::Vector3d start_pt, std::vector<Eigen::Vector3d> local_path);
+    std::vector<Eigen::Vector2d>  lowMpcOptimization(Eigen::Vector2d& start_pt, std::vector<Eigen::Vector2d>& local_path);
 
     typedef unique_ptr<low_mpc_planner> Ptr;
-//    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 }    // namespace adaptive_planner

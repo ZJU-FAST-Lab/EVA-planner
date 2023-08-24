@@ -1,0 +1,12 @@
+# Ignore Build files
+build
+bin
+debug
+release
+cmake-build-debug
+lib
+*.pyc
+# Docs
+docs
+# IDE settings
+.idea

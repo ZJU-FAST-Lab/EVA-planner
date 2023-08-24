@@ -1,7 +1,7 @@
 #ifndef _SDF_MAP_H
 #define _SDF_MAP_H
 
-#include <Eigen/Eigen>
+#include <Eigen/Dense>
 #include <Eigen/StdVector>
 #include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -23,6 +23,16 @@
 
 #include <plan_env/raycast.h>
 
+#include <fstream>
+#include <memory>
+#include <thread>
+#include <nav_msgs/OccupancyGrid.h>
+#include <ros/duration.h>
+#include <ros/ros.h>
+
+//#include <erl_conversions/erl_msg_utils.h>
+#include <erl_costmap_ros/erl_costmap.h>
+
 #define logit(x) (log((x) / (1 - (x))))
 
 using namespace std;
@@ -31,422 +41,341 @@ using namespace std;
 
 struct MappingParameters {
 
-  /* map properties */
-  Eigen::Vector3d map_origin_, map_size_;
-  Eigen::Vector3d map_min_boundary_, map_max_boundary_;  // map range in pos
-  Eigen::Vector3i map_voxel_num_;                        // map range in index
-  Eigen::Vector3i map_min_idx_, map_max_idx_;
-  Eigen::Vector3d local_update_range_;
-  double resolution_, resolution_inv_;
-  double obstacles_inflation_;
-  string frame_id_;
-  int pose_type_;
-  string map_input_;  // 1: pose+depth; 2: odom + cloud
+    /* map properties */
+    Eigen::Vector2d map_origin_, map_size_;
+    Eigen::Vector2d map_min_boundary_, map_max_boundary_;// map range in pos
+    Eigen::Vector2i map_voxel_num_;                      // map range in index
+    Eigen::Vector2i map_min_idx_, map_max_idx_;
+    Eigen::Vector2d local_update_range_;
+    double resolution_, resolution_inv_;
 
-  /* camera parameters */
-  double cx_, cy_, fx_, fy_;
-
-  /* depth image projection filtering */
-  double depth_filter_maxdist_, depth_filter_mindist_, depth_filter_tolerance_;
-  int depth_filter_margin_;
-  bool use_depth_filter_;
-  double k_depth_scaling_factor_;
-  int skip_pixel_;
-
-  /* raycasting */
-  double p_hit_, p_miss_, p_min_, p_max_, p_occ_;  // occupancy probability
-  double prob_hit_log_, prob_miss_log_, clamp_min_log_, clamp_max_log_,
-      min_occupancy_log_;                   // logit of occupancy probability
-  double min_ray_length_, max_ray_length_;  // range of doing raycasting
-
-  /* local map update and clear */
-  double local_bound_inflate_;
-  int local_map_margin_;
-
-  /* visualization and computation time display */
-  double esdf_slice_height_, visualization_truncate_height_, ceil_height_, ground_height_;
-  bool show_esdf_time_, show_occ_time_;
-
-  /* active mapping */
-  double unknown_flag_;
+    bool show_esdf_time_;
 };
 
 // intermediate mapping data for fusion, esdf
 
 class SDFMap {
 private:
-  MappingParameters mp_;
-  
-  // main map data, occupancy of each voxel and Euclidean distance
-  vector<double> occupancy_buffer_;
-  vector<char> occupancy_buffer_neg_;
-  vector<char> occupancy_buffer_inflate_;
-  vector<double> distance_buffer_;
-  vector<double> distance_buffer_neg_;
-  vector<double> distance_buffer_all_;
-  vector<double> tmp_buffer1_;
-  vector<double> tmp_buffer2_;
+    MappingParameters mp_;
 
-  // camera position and pose data
+    ros::NodeHandle node_;
 
-  Eigen::Vector3d camera_pos_, last_camera_pos_;
-  Eigen::Quaterniond camera_q_, last_camera_q_;
-  Eigen::Matrix4d cam2body_;
+    ros::Subscriber gridmap_sub_, odom_sub_, query_sub_;// GridMap Subscriber from a mapper.
 
-  // depth image data
+    // publishers
+    ros::Publisher planning_costmap_pub;// custom path publisher
+    ros::Publisher rviz_costmap_pub;    // custom path publisher
+    ros::Publisher esdf_pub_;           // publish esdf as pointcloud  binary_pub_
+    ros::Publisher binary_pub_;         // publish binary map info as pointcloud
 
-  cv::Mat depth_image_, last_depth_image_;
-  int image_cnt_;
+    // costmap setting and costmap generator
+    std::shared_ptr<erl::CostMap2D::Setting> costmap_setting = std::make_shared<erl::CostMap2D::Setting>();
+    std::shared_ptr<erl::CostMap2D> m_costmap = nullptr;
 
-  // flags of map state
+    // ----------------------- Parameters --------------------------
 
-  bool occ_need_update_, need_clear_local_map_, esdf_need_update_;
-  bool has_first_depth_;
-  bool has_odom_, has_cloud_;
+    // params for occupancy grid msg (hector map) to value classification
+    int p_gridmsg_obstacle_lower_bound;
+    int p_gridmsg_obstacle_upper_bound;
+    int p_gridmsg_unknown;
 
-  // depth image projected point cloud
+    // params for costmap computation used for planning
+    double p_costmap_planning_gamma;
+    double p_costmap_planning_robot_inscribed_radius;
+    int p_costmap_planning_unknown;
+    int p_costmap_planning_lethal;
+    int p_costmap_planning_inscribed;
+    int p_costmap_planning_cutoff_cost;
 
-  vector<Eigen::Vector3d> proj_points_;
-  int proj_points_cnt;
 
-  // flag buffers for speeding up raycasting
+    // params for costmap computation used for ROS rviz visualization
+    int p_costmap_visualization_unknown;
+    int p_costmap_visualization_lethal;
+    int p_costmap_visualization_inscribed;
+    int p_costmap_visualization_planning_cutoff;
+    int p_costmap_visualization_zero_cost;
 
-  vector<short> count_hit_, count_hit_and_miss_;
-  vector<char> flag_traverse_, flag_rayend_;
-  char raycast_num_;
-  queue<Eigen::Vector3i> cache_voxel_;
+    // flags of map state
+    std::atomic<bool> has_esdf_;
+//    bool writing_esdf_temp_, has_odom_;
 
-  // range of updating ESDF
+    // camera position and pose data
+    Eigen::Vector3d robot_pos_;
+    Eigen::Vector3d last_camera_pos_;
+//    Eigen::Quaterniond camera_q_, last_camera_q_;
+    Eigen::Matrix4d cam2body_;
 
-  Eigen::Vector3i local_bound_min_, local_bound_max_;
+    // esdf map data
+    cv::Mat dist_map_buffer_;
 
-  // computation time
+    // computation time
+    double esdf_time_, max_esdf_time_;
 
-  double fuse_time_, esdf_time_, max_fuse_time_, max_esdf_time_;
-  int update_num_;
 
-  template <typename F_get_val, typename F_set_val>
-  void fillESDF(F_get_val f_get_val, F_set_val f_set_val, int start, int end, int dim);
+    // Publish esdf as point clould
+    void publishESDF();
 
-  // get depth image and camera pose
-  void depthPoseCallback(const sensor_msgs::ImageConstPtr& img,
-                         const geometry_msgs::PoseStampedConstPtr& pose);
-  void depthOdomCallback(const sensor_msgs::ImageConstPtr& img, const nav_msgs::OdometryConstPtr& odom);
-  void depthCallback(const sensor_msgs::ImageConstPtr& img);
-  void cloudCallback(const sensor_msgs::PointCloud2ConstPtr& img);
-  void poseCallback(const geometry_msgs::PoseStampedConstPtr& pose);
-  void odomCallback(const nav_msgs::OdometryConstPtr& odom);
+    // Publish binary map as point clould
+    void publishBinary();
 
-  // update occupancy by raycasting, and update ESDF
-  void updateOccupancyCallback(const ros::TimerEvent& /*event*/);
-  void updateESDFCallback(const ros::TimerEvent& /*event*/);
-  void visCallback(const ros::TimerEvent& /*event*/);
+    // Odom callback
+    void odomCallback(const nav_msgs::OdometryConstPtr &odom);
 
-  // main update process
-  void projectDepthImage();
-  void raycastProcess();
-  void clearAndInflateLocalMap();
+    // Gridmap callback
+    void gridmapCallback(const nav_msgs::OccupancyGrid::ConstPtr &gridmap_msg);
 
-  inline void inflatePoint(const Eigen::Vector3i& pt, int step, vector<Eigen::Vector3i>& pts);
-  int setCacheOccupancy(Eigen::Vector3d pos, int occ);
-  Eigen::Vector3d closetPointInMap(const Eigen::Vector3d& pt, const Eigen::Vector3d& camera_pt);
-
-  // typedef message_filters::sync_policies::ExactTime<sensor_msgs::Image,
-  // nav_msgs::Odometry> SyncPolicyImageOdom; typedef
-  // message_filters::sync_policies::ExactTime<sensor_msgs::Image,
-  // geometry_msgs::PoseStamped> SyncPolicyImagePose;
-  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, nav_msgs::Odometry>
-      SyncPolicyImageOdom;
-  typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, geometry_msgs::PoseStamped>
-      SyncPolicyImagePose;
-  typedef shared_ptr<message_filters::Synchronizer<SyncPolicyImagePose>> SynchronizerImagePose;
-  typedef shared_ptr<message_filters::Synchronizer<SyncPolicyImageOdom>> SynchronizerImageOdom;
-
-  ros::NodeHandle node_;
-  shared_ptr<message_filters::Subscriber<sensor_msgs::Image>> depth_sub_;
-  shared_ptr<message_filters::Subscriber<geometry_msgs::PoseStamped>> pose_sub_;
-  shared_ptr<message_filters::Subscriber<nav_msgs::Odometry>> odom_sub_;
-  SynchronizerImagePose sync_image_pose_;
-  SynchronizerImageOdom sync_image_odom_;
-
-  ros::Subscriber indep_depth_sub_, indep_odom_sub_, indep_pose_sub_, indep_cloud_sub_;
-  ros::Publisher map_pub_, esdf_pub_, map_inf_pub_, update_range_pub_;
-  ros::Publisher unknown_pub_, depth_pub_;
-  ros::Timer occ_timer_, esdf_timer_, vis_timer_;
+    // Query callback
+    void queryCallback(const geometry_msgs::PoseStampedConstPtr &msg);
 
 public:
-  SDFMap() {
-  }
-  ~SDFMap() {
-  }
+    SDFMap() {
+    }
+    ~SDFMap() {
+    }
 
-  enum { POSE_STAMPED = 1, ODOMETRY = 2, INVALID_IDX = -10000 };
+    void overwriteDefaultSetting(ros::NodeHandle &nh) {
+        // load gridmsg classification params
+        nh.param("gridmsg_obstacle_lower_bound", p_gridmsg_obstacle_lower_bound, 80);
+        nh.param("gridmsg_obstacle_upper_bound", p_gridmsg_obstacle_upper_bound, 100);
+        nh.param("gridmsg_unknown", p_gridmsg_unknown, -1);
 
-  // occupancy map management
-  void resetBuffer();
-  void resetBuffer(Eigen::Vector3d min, Eigen::Vector3d max);
+        // load params for costmap computation used for planning
+        nh.param("costmap_planning_robot_inscribed_radius", p_costmap_planning_robot_inscribed_radius, 0.215);
+        nh.param("costmap_planning_gamma", p_costmap_planning_gamma, 7.0);
 
-  inline void posToIndex(const Eigen::Vector3d& pos, Eigen::Vector3i& id);
-  inline void indexToPos(const Eigen::Vector3i& id, Eigen::Vector3d& pos);
-  inline int toAddress(const Eigen::Vector3i& id);
-  inline int toAddress(int& x, int& y, int& z);
+        nh.param("costmap_planning_unknown", p_costmap_planning_unknown, 3);
+        nh.param("costmap_planning_lethal", p_costmap_planning_lethal, 19);
+        nh.param("costmap_planning_inscribed", p_costmap_planning_inscribed, 19);
+        nh.param("costmap_planning_cutoff_cost", p_costmap_planning_cutoff_cost, 5);
 
-  inline bool isInMap(const Eigen::Vector3d& pos);
-  inline bool isInMap(const Eigen::Vector3i& idx);
 
-  inline void setOccupancy(Eigen::Vector3d pos, double occ = 1);
-  inline void setOccupied(Eigen::Vector3d pos);
-  inline int getOccupancy(Eigen::Vector3d pos);
-  inline int getOccupancy(Eigen::Vector3i id);
-  inline int getInflateOccupancy(Eigen::Vector3d pos);
+        // load params for costmap display in rviz
+        nh.param("costmap_visualization_unknown", p_costmap_visualization_unknown, -1);                // transparent? unknown explored region
+        nh.param("costmap_visualization_lethal", p_costmap_visualization_lethal, 100);                 // purple,
+        nh.param("costmap_visualization_inscribed", p_costmap_visualization_inscribed, 99);            // red
+        nh.param("costmap_visualization_planning_cutoff", p_costmap_visualization_planning_cutoff, -3);// yellow
+        nh.param("costmap_visualization_zero_cost", p_costmap_visualization_zero_cost, 0);             // green
 
-  inline void boundIndex(Eigen::Vector3i& id);
-  inline bool isUnknown(const Eigen::Vector3i& id);
-  inline bool isKnownFree(const Eigen::Vector3i& id);
+        // set flag for param reading
+        // ros_param_received = true;
 
-  // distance field management
-  inline double getDistance(const Eigen::Vector3d& pos);
-  inline double getDistance(const Eigen::Vector3i& id);
-  inline double getDistWithGradTrilinear(Eigen::Vector3d pos, Eigen::Vector3d& grad);
-  void getSurroundPts(const Eigen::Vector3d& pos, Eigen::Vector3d pts[2][2][2], Eigen::Vector3d& diff);
-  // /inline void setLocalRange(Eigen::Vector3d min_pos, Eigen::Vector3d
-  // max_pos);
+        costmap_setting->kUnknown = static_cast<int8_t>(p_gridmsg_unknown);
+        costmap_setting->kObsLb = static_cast<int8_t>(p_gridmsg_obstacle_lower_bound);
+        costmap_setting->kObsUb = static_cast<int8_t>(p_gridmsg_obstacle_upper_bound);
 
-  void updateESDF3d();
-  void getSliceESDF(const double height, const double res, const Eigen::Vector4d& range,
-                    vector<Eigen::Vector3d>& slice, vector<Eigen::Vector3d>& grad,
-                    int sign = 1);  // 1 pos, 2 neg, 3 combined
-  void initMap(ros::NodeHandle& nh);
+        costmap_setting->kCostGamma = p_costmap_planning_gamma;
+        costmap_setting->kCostRadius1 = p_costmap_planning_robot_inscribed_radius;
+        costmap_setting->kCostUnknown = static_cast<int8_t>(p_costmap_planning_unknown);
+        costmap_setting->kCostLethal = static_cast<int8_t>(p_costmap_planning_lethal);
+        costmap_setting->kCostInscribed = static_cast<int8_t>(p_costmap_planning_inscribed);
+        costmap_setting->kCostCutoff = static_cast<int8_t>(p_costmap_planning_cutoff_cost);
 
-  void publishMap();
-  void publishMapInflate(bool all_info = false);
-  void publishESDF();
-  void publishUpdateRange();
+        costmap_setting->kVisUnknown = static_cast<int8_t>(p_costmap_visualization_unknown);
+        costmap_setting->kVisLethal = static_cast<int8_t>(p_costmap_visualization_lethal);
+        costmap_setting->kVisInscribed = static_cast<int8_t>(p_costmap_visualization_inscribed);
+        costmap_setting->kVisCutoff = static_cast<int8_t>(p_costmap_visualization_planning_cutoff);
+        costmap_setting->kVisZero = static_cast<int8_t>(p_costmap_visualization_zero_cost);
 
-  void publishUnknown();
-  void publishDepth();
 
-  void checkDist();
-  bool hasDepthObservation();
-  bool odomValid();
-  void getRegion(Eigen::Vector3d& ori, Eigen::Vector3d& size);
-  double getResolution();
-  Eigen::Vector3d getOrigin();
-  int getVoxelNum();
+        ROS_INFO("ErlCostmap kUnknown: %d", costmap_setting->kUnknown);
+        ROS_INFO("ErlCostmap kObsLb: %d", costmap_setting->kObsLb);
+        ROS_INFO("ErlCostmap kObsUb: %d\n", costmap_setting->kObsUb);
 
-  typedef std::shared_ptr<SDFMap> Ptr;
 
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  //
+        ROS_INFO("ErlCostmap kCostGamma: %.2f", costmap_setting->kCostGamma);
+        ROS_INFO("ErlCostmap kCostRadius1: %.2f", costmap_setting->kCostRadius1);
+        ROS_INFO("ErlCostmap kCostUnknown: %d", costmap_setting->kCostUnknown);
+        ROS_INFO("ErlCostmap kCostLethal: %d", costmap_setting->kCostLethal);
+        ROS_INFO("ErlCostmap kCostInscribed: %d", costmap_setting->kCostInscribed);
+        ROS_INFO("ErlCostmap kCostCutoff: %d\n", costmap_setting->kCostCutoff);
+
+        ROS_INFO("ErlCostmap kVisUnknown: %d", costmap_setting->kVisUnknown);
+        ROS_INFO("ErlCostmap kVisLethal: %d", costmap_setting->kVisLethal);
+        ROS_INFO("ErlCostmap kVisInscribed: %d", costmap_setting->kVisInscribed);
+        ROS_INFO("ErlCostmap kVisCutoff: %d", costmap_setting->kVisCutoff);
+        ROS_INFO("ErlCostmap kVisZero: %d\n", costmap_setting->kVisZero);
+    }
+
+
+    inline void posToIndex(const Eigen::Vector2d &pos, Eigen::Vector2i &id);
+    inline void indexToPos(const Eigen::Vector2i &id, Eigen::Vector2d &pos);
+    inline int toAddress(const Eigen::Vector2i &id);
+
+    inline bool isInMap(const Eigen::Vector2d &pos);
+
+    inline int getInflateOccupancy(Eigen::Vector2d pos);
+
+    inline void boundIndex(Eigen::Vector2i &id);
+    inline bool isUnknown(const Eigen::Vector2i &id);
+    inline bool isKnownFree(const Eigen::Vector2d &pos);
+    inline bool isKnownFree(const Eigen::Vector2i &id);
+
+    // distance field management
+    inline double getDistance(const Eigen::Vector2d &pos);
+    inline double getDistance(const Eigen::Vector2i &id);
+    double getDistWithGradTrilinear(Eigen::Vector2d pos, Eigen::Vector2d &grad);
+    void getSurroundPts(const Eigen::Vector2d &pos, Eigen::Vector2d pts[2][2], Eigen::Vector2d &diff);
+
+    // assembly costmap msg for planning
+    inline nav_msgs::OccupancyGrid generatePlanningCostmapMsg(const nav_msgs::OccupancyGrid::ConstPtr &msg_in);
+
+    // assembly costmap msg for rviz
+    inline nav_msgs::OccupancyGrid generateRvizCostmapMsg(const nav_msgs::OccupancyGrid::ConstPtr &msg_in);
+
+
+    void initMap(ros::NodeHandle &nh);
+
+    void getRegion(Eigen::Vector2d &ori, Eigen::Vector2d &size);
+    double getResolution();
+    Eigen::Vector2d getOrigin();
+    int getVoxelNum();
+
+    typedef std::shared_ptr<SDFMap> Ptr;
+
+//    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    //
 };
 
-/* ============================== definition of inline function
- * ============================== */
+/* ============================== definition of inline function ============================== */
 
-inline int SDFMap::toAddress(const Eigen::Vector3i& id) {
-  return id(0) * mp_.map_voxel_num_(1) * mp_.map_voxel_num_(2) + id(1) * mp_.map_voxel_num_(2) + id(2);
+inline int SDFMap::toAddress(const Eigen::Vector2i &id) {
+    return id(0) + id(1) * mp_.map_voxel_num_(1);
 }
 
-inline int SDFMap::toAddress(int& x, int& y, int& z) {
-  return x * mp_.map_voxel_num_(1) * mp_.map_voxel_num_(2) + y * mp_.map_voxel_num_(2) + z;
+inline void SDFMap::boundIndex(Eigen::Vector2i &id) {
+    Eigen::Vector2i id1;
+    id1(0) = max(min(id(0), mp_.map_voxel_num_(0) - 1), 0);
+    id1(1) = max(min(id(1), mp_.map_voxel_num_(1) - 1), 0);
+    id = id1;
 }
 
-inline void SDFMap::boundIndex(Eigen::Vector3i& id) {
-  Eigen::Vector3i id1;
-  id1(0) = max(min(id(0), mp_.map_voxel_num_(0) - 1), 0);
-  id1(1) = max(min(id(1), mp_.map_voxel_num_(1) - 1), 0);
-  id1(2) = max(min(id(2), mp_.map_voxel_num_(2) - 1), 0);
-  id = id1;
-}
-
-inline double SDFMap::getDistance(const Eigen::Vector3d& pos) {
-  Eigen::Vector3i id;
+inline double SDFMap::getDistance(const Eigen::Vector2d& pos) {
+  Eigen::Vector2i id;
   posToIndex(pos, id);
   boundIndex(id);
+//  cout << "num elem: " << dist_map_buffer_.elemSize() << std::endl;
+//  cout << "size: " << dist_map_buffer_.size[0] << ", " << dist_map_buffer_.size[1] << std::endl;
+//  cout << "channels: " << dist_map_buffer_.channels() << endl;
 
-  return distance_buffer_all_[toAddress(id)];
+  return static_cast<double>(dist_map_buffer_.at<float>(static_cast<int>(toAddress(id))));
 }
 
-inline double SDFMap::getDistance(const Eigen::Vector3i& id) {
-  Eigen::Vector3i id1 = id;
-  boundIndex(id1);
-  return distance_buffer_all_[toAddress(id1)];
+inline double SDFMap::getDistance(const Eigen::Vector2i &id) {
+    Eigen::Vector2i id1 = id;
+    boundIndex(id1);
+
+    return static_cast<double>(dist_map_buffer_.at<float>(static_cast<int>(toAddress(id))));
 }
 
-inline bool SDFMap::isUnknown(const Eigen::Vector3i& id) {
-  Eigen::Vector3i id1 = id;
-  boundIndex(id1);
-  return occupancy_buffer_[toAddress(id1)] < mp_.clamp_min_log_ - 1e-3;
+inline bool SDFMap::isUnknown(const Eigen::Vector2i &id) {
+    Eigen::Vector2i id1 = id;
+    boundIndex(id1);
+
+    return m_costmap->planning_costmap_data[toAddress(id1)] == m_costmap->setting->kCostUnknown;
 }
 
-inline bool SDFMap::isKnownFree(const Eigen::Vector3i& id) {
-  Eigen::Vector3i id1 = id;
-  boundIndex(id1);
-  int adr = toAddress(id1);
+inline bool SDFMap::isKnownFree(const Eigen::Vector2d &pos) {
+    Eigen::Vector2i id1;
+    posToIndex(pos, id1);
+    boundIndex(id1);
 
-  // return occupancy_buffer_[adr] >= mp_.clamp_min_log_ &&
-  //     occupancy_buffer_[adr] < mp_.min_occupancy_log_;
-  return occupancy_buffer_[adr] >= mp_.clamp_min_log_ && occupancy_buffer_inflate_[adr] == 0;
+    return !isUnknown(id1) && double(dist_map_buffer_.at<float>(toAddress(id1))) >= 0.05;
 }
 
-inline double SDFMap::getDistWithGradTrilinear(Eigen::Vector3d pos, Eigen::Vector3d& grad) {
-  if (!isInMap(pos)) {
-    grad.setZero();
-    return 0;
-  }
+inline bool SDFMap::isKnownFree(const Eigen::Vector2i &id) {
+    Eigen::Vector2i id1 = id;
+    boundIndex(id1);
 
-  /* use trilinear interpolation */
-  Eigen::Vector3d pos_m = pos - 0.5 * mp_.resolution_ * Eigen::Vector3d::Ones();
+    return !isUnknown(id1) && double(dist_map_buffer_.at<float>(toAddress(id1))) >= 0.05;
+}
 
-  Eigen::Vector3i idx;
-  posToIndex(pos_m, idx);
-
-  Eigen::Vector3d idx_pos, diff;
-  indexToPos(idx, idx_pos);
-
-  diff = (pos - idx_pos) * mp_.resolution_inv_;
-
-  double values[2][2][2];
-  for (int x = 0; x < 2; x++) {
-    for (int y = 0; y < 2; y++) {
-      for (int z = 0; z < 2; z++) {
-        Eigen::Vector3i current_idx = idx + Eigen::Vector3i(x, y, z);
-        values[x][y][z] = getDistance(current_idx);
-      }
+inline double SDFMap::getDistWithGradTrilinear(Eigen::Vector2d pos, Eigen::Vector2d &grad) {
+    if (!isInMap(pos)) {
+        cout << "Not in map" << endl;
+        grad.setZero();
+        return 0;
     }
-  }
 
-  double v00 = (1 - diff[0]) * values[0][0][0] + diff[0] * values[1][0][0];
-  double v01 = (1 - diff[0]) * values[0][0][1] + diff[0] * values[1][0][1];
-  double v10 = (1 - diff[0]) * values[0][1][0] + diff[0] * values[1][1][0];
-  double v11 = (1 - diff[0]) * values[0][1][1] + diff[0] * values[1][1][1];
-  double v0 = (1 - diff[1]) * v00 + diff[1] * v10;
-  double v1 = (1 - diff[1]) * v01 + diff[1] * v11;
-  double dist = (1 - diff[2]) * v0 + diff[2] * v1;
+    /* use trilinear interpolation */
+    Eigen::Vector2d pos_m = pos - 0.5 * mp_.resolution_ * Eigen::Vector2d::Ones();
 
-  grad[2] = (v1 - v0) * mp_.resolution_inv_;
-  grad[1] = ((1 - diff[2]) * (v10 - v00) + diff[2] * (v11 - v01)) * mp_.resolution_inv_;
-  grad[0] = (1 - diff[2]) * (1 - diff[1]) * (values[1][0][0] - values[0][0][0]);
-  grad[0] += (1 - diff[2]) * diff[1] * (values[1][1][0] - values[0][1][0]);
-  grad[0] += diff[2] * (1 - diff[1]) * (values[1][0][1] - values[0][0][1]);
-  grad[0] += diff[2] * diff[1] * (values[1][1][1] - values[0][1][1]);
+    Eigen::Vector2i idx;
+    posToIndex(pos_m, idx);
 
-  grad[0] *= mp_.resolution_inv_;
+    Eigen::Vector2d idx_pos, diff;
+    indexToPos(idx, idx_pos);
 
-  return dist;
+    diff = (pos - idx_pos) * mp_.resolution_inv_;
+
+    double values[2][2];
+    for (int x = 0; x < 2; x++) {
+        for (int y = 0; y < 2; y++) {
+            Eigen::Vector2i current_idx = idx + Eigen::Vector2i(x, y);
+            values[x][y] = getDistance(current_idx);
+        }
+    }
+
+    double v0 = (1 - diff[0]) * values[0][0] + diff[0] * values[1][0];
+    double v1 = (1 - diff[0]) * values[0][1] + diff[0] * values[1][1];
+    double dist = (1 - diff[1]) * v0 + diff[1] * v1;
+
+    grad[1] = (v1 - v0) * mp_.resolution_inv_;
+    grad[0] = (1 - diff[1]) * (values[1][0] - values[0][0]);
+    grad[0] += diff[1] * (values[1][1] - values[0][1]);
+
+    grad[0] *= mp_.resolution_inv_;
+
+    return dist;
 }
 
-inline void SDFMap::setOccupied(Eigen::Vector3d pos) {
-  if (!isInMap(pos)) return;
+inline int SDFMap::getInflateOccupancy(Eigen::Vector2d pos) {
+    if (!isInMap(pos)) return -1;
 
-  Eigen::Vector3i id;
-  posToIndex(pos, id);
-
-  occupancy_buffer_inflate_[id(0) * mp_.map_voxel_num_(1) * mp_.map_voxel_num_(2) +
-                                id(1) * mp_.map_voxel_num_(2) + id(2)] = 1;
+    return int(getDistance(pos) >= 0.1 ? int(0) : int(1));
 }
 
-inline void SDFMap::setOccupancy(Eigen::Vector3d pos, double occ) {
-  if (occ != 1 && occ != 0) {
-    cout << "occ value error!" << endl;
-    return;
-  }
-
-  if (!isInMap(pos)) return;
-
-  Eigen::Vector3i id;
-  posToIndex(pos, id);
-
-  occupancy_buffer_[toAddress(id)] = occ;
+inline bool SDFMap::isInMap(const Eigen::Vector2d &pos) {
+    if (pos(0) < mp_.map_min_boundary_(0) + 1e-4 || pos(1) < mp_.map_min_boundary_(1) + 1e-4) {
+        // cout << "less than min range!" << endl;
+        return false;
+    }
+    if (pos(0) > mp_.map_max_boundary_(0) - 1e-4 || pos(1) > mp_.map_max_boundary_(1) - 1e-4) {
+        return false;
+    }
+    return true;
 }
 
-inline int SDFMap::getOccupancy(Eigen::Vector3d pos) {
-  if (!isInMap(pos)) return -1;
-
-  Eigen::Vector3i id;
-  posToIndex(pos, id);
-
-  return occupancy_buffer_[toAddress(id)] > mp_.min_occupancy_log_ ? 1 : 0;
+inline void SDFMap::posToIndex(const Eigen::Vector2d &pos, Eigen::Vector2i &id) {
+    for (int i = 0; i < 2; ++i) {
+        id(i) = floor((pos(i) - mp_.map_origin_(i)) * mp_.resolution_inv_);
+        //    std::cout << "posToIndex Itr: " << i << "id :" << id(i) << "id type: " << typeid(id(i)).name() << std::endl;
+    }
 }
 
-inline int SDFMap::getInflateOccupancy(Eigen::Vector3d pos) {
-  if (!isInMap(pos)) return -1;
-
-  Eigen::Vector3i id;
-  posToIndex(pos, id);
-
-  return int(occupancy_buffer_inflate_[toAddress(id)]);
+inline void SDFMap::indexToPos(const Eigen::Vector2i &id, Eigen::Vector2d &pos) {
+    for (int i = 0; i < 2; ++i)
+        pos(i) = (id(i) + 0.5) * mp_.resolution_ + mp_.map_origin_(i);
 }
 
-inline int SDFMap::getOccupancy(Eigen::Vector3i id) {
-  if (id(0) < 0 || id(0) >= mp_.map_voxel_num_(0) || id(1) < 0 || id(1) >= mp_.map_voxel_num_(1) ||
-      id(2) < 0 || id(2) >= mp_.map_voxel_num_(2))
-    return -1;
-
-  return occupancy_buffer_[toAddress(id)] > mp_.min_occupancy_log_ ? 1 : 0;
+inline nav_msgs::OccupancyGrid SDFMap::generatePlanningCostmapMsg(const nav_msgs::OccupancyGrid::ConstPtr &msg_in) {
+    nav_msgs::OccupancyGrid msg;
+    msg.header.frame_id = "map";
+    msg.header.stamp = ros::Time::now();
+    msg.info = msg_in->info;
+    // be cautious, the data are all row-majored
+    msg.data.assign(m_costmap->planning_costmap_data.begin(), m_costmap->planning_costmap_data.end());
+    return msg;
 }
 
-inline bool SDFMap::isInMap(const Eigen::Vector3d& pos) {
-  if (pos(0) < mp_.map_min_boundary_(0) + 1e-4 || pos(1) < mp_.map_min_boundary_(1) + 1e-4 ||
-      pos(2) < mp_.map_min_boundary_(2) + 1e-4) {
-    // cout << "less than min range!" << endl;
-    return false;
-  }
-  if (pos(0) > mp_.map_max_boundary_(0) - 1e-4 || pos(1) > mp_.map_max_boundary_(1) - 1e-4 ||
-      pos(2) > mp_.map_max_boundary_(2) - 1e-4) {
-    return false;
-  }
-  return true;
-}
-
-inline bool SDFMap::isInMap(const Eigen::Vector3i& idx) {
-  if (idx(0) < 0 || idx(1) < 0 || idx(2) < 0) {
-    return false;
-  }
-  if (idx(0) > mp_.map_voxel_num_(0) - 1 || idx(1) > mp_.map_voxel_num_(1) - 1 ||
-      idx(2) > mp_.map_voxel_num_(2) - 1) {
-    return false;
-  }
-  return true;
-}
-
-inline void SDFMap::posToIndex(const Eigen::Vector3d& pos, Eigen::Vector3i& id) {
-  for (int i = 0; i < 3; ++i)
-    id(i) = floor((pos(i) - mp_.map_origin_(i)) * mp_.resolution_inv_);
-}
-
-inline void SDFMap::indexToPos(const Eigen::Vector3i& id, Eigen::Vector3d& pos) {
-  for (int i = 0; i < 3; ++i)
-    pos(i) = (id(i) + 0.5) * mp_.resolution_ + mp_.map_origin_(i);
-}
-
-inline void SDFMap::inflatePoint(const Eigen::Vector3i& pt, int step, vector<Eigen::Vector3i>& pts) {
-  int num = 0;
-
-  /* ---------- + shape inflate ---------- */
-  // for (int x = -step; x <= step; ++x)
-  // {
-  //   if (x == 0)
-  //     continue;
-  //   pts[num++] = Eigen::Vector3i(pt(0) + x, pt(1), pt(2));
-  // }
-  // for (int y = -step; y <= step; ++y)
-  // {
-  //   if (y == 0)
-  //     continue;
-  //   pts[num++] = Eigen::Vector3i(pt(0), pt(1) + y, pt(2));
-  // }
-  // for (int z = -1; z <= 1; ++z)
-  // {
-  //   pts[num++] = Eigen::Vector3i(pt(0), pt(1), pt(2) + z);
-  // }
-
-  /* ---------- all inflate ---------- */
-  for (int x = -step; x <= step; ++x)
-    for (int y = -step; y <= step; ++y)
-      for (int z = -step; z <= step; ++z) {
-        pts[num++] = Eigen::Vector3i(pt(0) + x, pt(1) + y, pt(2) + z);
-      }
+inline nav_msgs::OccupancyGrid SDFMap::generateRvizCostmapMsg(const nav_msgs::OccupancyGrid::ConstPtr &msg_in) {
+    nav_msgs::OccupancyGrid msg;
+    msg.header.frame_id = "map";
+    msg.header.stamp = ros::Time::now();
+    msg.info = msg_in->info;
+    // msg.info.map_load_time = ros::Time::now();
+    // be cautious, the data are all row-majored
+    msg.data.assign(m_costmap->rviz_costmap_data.begin(), m_costmap->rviz_costmap_data.end());
+    return msg;
 }
 
 #endif

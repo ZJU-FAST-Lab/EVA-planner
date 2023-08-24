@@ -1,0 +1,48 @@
+<launch>
+  <arg name="use_sim_time" default="true" />
+  <arg name="gui" default="true" />
+  <arg name="headless" default="false" />
+  <arg name="world_name" default="$(find jackal_gazebo)/worlds/jackal_race.world" />
+
+  <!-- Configuration of Jackal which you would like to simulate.
+    See jackal_description for details. -->
+  <arg name="config" default="front_laser" />
+
+  <!-- Optionally enable teleop for the simulation -->
+  <arg name="joystick" default="true" />
+
+  <!-- Launch Gazebo with the specified world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="debug" value="0" />
+    <arg name="gui" value="$(arg gui)" />
+    <arg name="use_sim_time" value="$(arg use_sim_time)" />
+    <arg name="headless" value="$(arg headless)" />
+    <arg name="world_name" value="$(arg world_name)" />
+  </include>
+
+  <!-- Spawn Jackal -->
+  <include file="$(find jackal_gazebo)/launch/spawn_jackal.launch">
+    <arg name="x" value="0" />
+    <arg name="y" value="0" />
+    <arg name="z" value="1.0" />
+    <arg name="yaw" value="0" />
+    <arg name="config" value="$(arg config)" />
+    <arg name="joystick" value="$(arg joystick)" />
+    <arg name="keyboard" default="false" />
+    <arg name="enable_ekf" default="false" />
+  </include>
+
+  <!--Running with ground truth odom without ekf. Set the ground truth topic-->
+  <arg name="gazebo_odom_topic" default="/ground_truth/state" />
+
+	<!-- published odom to base_footprint transform -->
+  <node pkg="gazebo_p3d_utils" type="p3d_link_tf" name="p3d_link_tf"  output="screen">
+    <remap from="~input" to="$(arg gazebo_odom_topic)"/>
+  </node>
+
+  <!--Spawn rviz -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find jackal_gazebo)/rviz/test_p3d.rviz" />
+
+  <node name="rqt_multiplot" pkg="rqt_multiplot" type="rqt_multiplot" args="--multiplot-config $(find jackal_gazebo)/plot_config/test_p3d_traj2d.xml --multiplot-run-all"/>
+
+</launch>

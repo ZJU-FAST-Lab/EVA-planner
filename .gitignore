@@ -10,6 +10,8 @@ sim_figs/
 sim_figs/*.png
 notes/*frame*.*
 src/.idea/
+src/.vscode
+src/cmake-build-debug
 **/.idea
 default.yaml
 src/grid_map_utils/data/

@@ -1,0 +1,20 @@
+#  Planner Configuration
+int8 T  # The Planning Horizon
+#float64 epsilon  # The epsilon parameter
+#float64 delta  # The delta parameter.
+#float64 runtime  # If this is Non-Zero, use the ARVI planner with epsilon and delta initial values.
+float64 inflation_value  # Meters to inflate map by.
+float64 fixed_z # Fixed Z height.
+
+
+# Resilient Flag
+int8 attacks  # Number of attacks. Default to zero.
+int8 use_resilience # Flag indicating if the resilient algorithm should be used.
+---
+# Result
+uint8 status_code
+
+---
+# Feedback
+bool success
+uint8[] attacks  # List of indices of the attacked robots. Size matches the number of attacks.

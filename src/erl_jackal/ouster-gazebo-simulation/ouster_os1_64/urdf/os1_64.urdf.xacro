@@ -1,0 +1,117 @@
+<?xml version="1.0"?>
+<!-- Modified from the work of Wil Selby (https://github.com/wilselby/ouster_example/blob/master/ouster_description/urdf/OS1-64.urdf.xacro) -->
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="os1_64">
+  <xacro:property name="PI" value="3.1415926535897931"/>
+
+  <xacro:macro name="os1_64" params="*origin parent_link:=base_link name:=ouster reduced:=true prefix:=/os1_cloud_node hz:=10 samples:=512 min_range:=0.8 max_range:=100 noise:=0.008 min_angle_v:=-16.6 max_angle_v:=16.6 gpu:=false">
+
+    <!-- Conditional properties -->
+    <xacro:if value="${reduced}">
+      <xacro:property name="file_visual" value="os1_64_reduced"/>
+    </xacro:if>
+    <xacro:unless value="${reduced}">
+      <xacro:property name="file_visual" value="os1_64"/>
+    </xacro:unless>
+
+    <xacro:if value="${gpu}">
+      <xacro:property name="gpu_str" value="gpu_"/>
+    </xacro:if>
+    <xacro:unless value="${gpu}">
+      <xacro:property name="gpu_str" value=""/>
+    </xacro:unless>
+
+
+    <joint name="${name}_joint" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent_link}"/>
+      <child link="${name}_sensor"/>
+    </joint>
+
+    <link name="${name}_sensor">
+      <inertial>
+        <mass value="0.425"/>
+        <origin xyz="0 0 0.03675" rpy="0 0 0" />
+        <inertia ixx="0.000308429" ixy="0" ixz="0"
+                 iyy="0.000308429" iyz="0" izz="0.00034589"/>
+      </inertial>
+      <collision name="lidar_collision">
+        <origin xyz="0 0 0.03675" rpy="0 0 0" />
+        <geometry>
+          <cylinder radius="0.04350" length="0.07350"/>
+        </geometry>
+      </collision>
+      <visual name="lidar_visual">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://ouster_os1_64/meshes/${file_visual}.stl" />
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="${name}_lidar">
+      <pose>0 0 0 0 0 ${PI}</pose>
+    </link>
+    <joint name="${name}_lidar_joint" type="fixed">
+      <parent link="${name}_sensor"/>
+      <child link="${name}_lidar"/>
+    </joint>
+
+    <gazebo reference="${name}_lidar">
+      <sensor type="${gpu_str}ray" name="${name}_lidar">
+        <pose>0 0 0 0 0 0</pose>
+        <visualize>false</visualize>
+        <update_rate>${hz}</update_rate>
+        <ray>
+          <scan>
+            <vertical>
+              <samples>64</samples>
+              <resolution>1</resolution>
+              <min_angle>${min_angle_v*PI/180.0}</min_angle>
+              <max_angle>${max_angle_v*PI/180.0}</max_angle>
+            </vertical>
+            <horizontal>
+              <samples>${samples}</samples>
+              <resolution>1</resolution>
+              <min_angle>-${PI}</min_angle>
+              <max_angle>${PI}</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>${min_range}</min>
+            <max>${max_range}</max>
+            <resolution>0.03</resolution>
+          </range>
+          <noise>
+            <type>gaussian</type>
+            <mean>0.0</mean>
+            <stddev>0.000000000001</stddev>
+          </noise>
+        </ray>
+        <plugin name="gazebo_ros_laser_controller" filename="libgazebo_ros_ouster_${gpu_str}laser.so">
+          <topicName>${prefix}/points</topicName>
+          <frameName>${name}_lidar</frameName>
+          <min_range>${min_range}</min_range>
+          <max_range>${max_range}</max_range>
+          <gaussianNoise>${noise}</gaussianNoise>
+        </plugin>
+      </sensor>
+    </gazebo>
+
+    <link name="${name}_imu"/>
+    <joint name="${name}_imu_joint" type="fixed">
+      <parent link="${name}_sensor"/>
+      <child link="${name}_imu"/>
+    </joint>
+
+    <gazebo reference="${name}_imu">
+      <sensor type="imu" name="${name}_imu_sensor">
+        <pose>0 0 0 0 0 0</pose>
+        <always_on>true</always_on>
+        <update_rate>100</update_rate>
+        <visualize>true</visualize>
+        <topic>${prefix}/imu</topic>
+      </sensor>
+    </gazebo>
+
+  </xacro:macro>
+</robot>

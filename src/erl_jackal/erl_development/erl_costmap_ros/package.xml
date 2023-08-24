@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>erl_costmap_ros</name>
+  <version>0.0.0</version>
+  <description>This package is a wrapper around the ERL costmap implementation enabling ROS functionality.</description>
+
+  <maintainer email="zhl@xx.xx">brent</maintainer>
+  <!-- One license tag required, multiple allowed, one license per tag -->
+  <!-- Commonly used license strings: -->
+  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>catkin_simple</build_depend>
+
+  <depend>eigen</depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+  <!-- ERL Dependencies -->
+<!--  <depend>erl_env </depend>-->
+<!--  <depend>erl_msgs </depend>-->
+<!--  <depend>erl_map </depend>-->
+<!--  <depend>erl_conversions</depend>-->
+<!--  <depend>erl_utilities </depend>-->
+
+  <export> </export>
+
+</package>

@@ -101,7 +101,7 @@
     <param name="edt_map/costmap_r"     value="0.2" type="double"/>
     <param name="edt_map/costmap_d"     value="1.0" type="double"/>
     
-    <!-- Astar3d path searching -->
+    <!-- Astar path searching -->
     <param name="astar/resolution_astar" value="0.1"    type="double"/>
     <param name="astar/margin"           value="0.3"    type="double"/>
     <param name="astar/local_margin"     value="10.0"   type="double"/>
@@ -120,9 +120,9 @@
     <param name="multi_mpcc/show_highmpcc_time" value="false"/> 
     
     <!-- Low MPC -->
-    <param name="low_mpc/alpha1" value="5.0" type="double"/>      <!-- fu: control input -->
-    <param name="low_mpc/alpha2" value="2.0"   type="double"/>      <!-- fc: distance to obstacle -->
-    <param name="low_mpc/alpha3" value="1.0"   type="double"/>      <!-- fs: similarity to reference path -->
+    <param name="low_mpc/alpha_s" value="5.0" type="double"/>      <!-- fu: control input -->
+    <param name="low_mpc/alpha_p" value="2.0"   type="double"/>      <!-- fc: distance to obstacle -->
+    <param name="low_mpc/alpha_e" value="1.0"   type="double"/>      <!-- fs: similarity to reference path -->
 
     <param name="low_mpc/max_iteration_num"   value="200"   type="int"/>
     <param name="low_mpc/max_iteration_time"  value="0.01"  type="double"/>
@@ -138,11 +138,11 @@
     <param name="optimization/dist_0"   value="0.5" type="double"/>         <!-- dist_0 : trajectory safe dist -->>
     <param name="optimization/dist_1"   value="1.0" type="double"/>         <!-- dist_1 : system safe dist -->>
 
-    <param name="optimization/alpha1" value="5.0"   type="double"/>         <!-- fs   : similarity of the reference traj -->
-    <param name="optimization/alpha2" value="0.001"  type="double"/>         <!-- fvthe: progress value -->
-    <param name="optimization/alpha3" value="1.0"  type="double"/>          <!-- fv   : velocity directioin depend panelty -->
-    <param name="optimization/alpha4" value="10.0"   type="double"/>         <!-- fc   : distance to obstacle -->
-    <param name="optimization/alpha5" value="100.0" type="double"/>         <!-- ftheta: the penalty of theta  -->
+    <param name="optimization/alpha_s" value="5.0"   type="double"/>         <!-- fs   : similarity of the reference traj -->
+    <param name="optimization/alpha_p" value="0.001"  type="double"/>         <!-- fvthe: progress value -->
+    <param name="optimization/alpha_e" value="1.0"  type="double"/>          <!-- fv   : velocity directioin depend panelty -->
+    <param name="optimization/alpha_c" value="10.0"   type="double"/>         <!-- fc   : distance to obstacle -->
+    <param name="optimization/alpha_mu" value="100.0" type="double"/>         <!-- ftheta: the penalty of theta  -->
     <param name="optimization/alpha6" value="100.0" type="double"/>         <!-- fvel facc: the penalty of vel and acc -->
     <param name="optimization/alpha7" value="100.0"  type="double"/>         <!-- fjerk: minimum the change of jerk -->
     <param name="optimization/alpha8" value="100.0"  type="double"/>
