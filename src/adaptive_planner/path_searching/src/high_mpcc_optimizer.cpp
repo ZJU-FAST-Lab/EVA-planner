@@ -414,7 +414,7 @@ void high_mpcc_optimizer::calCostFunctionandGradient(){
 
                 p_f_beta_beta = 2 * K_ * exp(K_*beta) / pow(1+exp(K_*beta),2);
                 // p_f_beta_ux
-                p_beta_vx = (dist_grad(0)*pow(vel.norm(),2) - vel.dot(dist_grad)*vel(0)) / pow(vel.norm(),3) / dist_grad.norm(); 
+                p_beta_vx = (dist_grad(0)*pow(vel.norm(),2) - vel.dot(dist_grad)*vel(0)) / pow(vel.norm(),3) / dist_grad.norm();
                 p_beta_cx = (vel(0)*pow(dist_grad.norm(),2) - vel.dot(dist_grad)*dist_grad(0)) / vel.norm() / pow(dist_grad.norm(),3);
                 p_f_beta_ux = p_f_beta_beta * (p_beta_vx * A_.row(3*i + 1) + p_beta_cx * dist_grad2(0) * A_.row(3*i));
                 // p_f_beta_uy
@@ -426,9 +426,9 @@ void high_mpcc_optimizer::calCostFunctionandGradient(){
                 p_beta_cz = (vel(2)*pow(dist_grad.norm(),2) - vel.dot(dist_grad)*dist_grad(2)) / vel.norm() / pow(dist_grad.norm(),3);
                 p_f_beta_uz = p_f_beta_beta * (p_beta_vz * A_.row(3*i + 1) + p_beta_cz * dist_grad2(2) * A_.row(3*i));
 
-                Gradient_vx += p_f_beta_ux * pow(dist-dist_1_,2) * pow(vel.norm()-vel_min_,2) + f_beta * (2*(dist-dist_1_)*dist_grad(0) * A_.row(3*i).transpose() * pow(vel.norm()-vel_min_,2) + 2 * pow(dist-dist_1_,2) * vel(0) * (vel.norm()-vel_min_) / vel.norm() * A_.row(3*i+1).transpose());
-                Gradient_vy += p_f_beta_uy * pow(dist-dist_1_,2) * pow(vel.norm()-vel_min_,2) + f_beta * (2*(dist-dist_1_)*dist_grad(1) * A_.row(3*i).transpose() * pow(vel.norm()-vel_min_,2) + 2 * pow(dist-dist_1_,2) * vel(1) * (vel.norm()-vel_min_) / vel.norm() * A_.row(3*i+1).transpose());
-                Gradient_vz += p_f_beta_uz * pow(dist-dist_1_,2) * pow(vel.norm()-vel_min_,2) + f_beta * (2*(dist-dist_1_)*dist_grad(2) * A_.row(3*i).transpose() * pow(vel.norm()-vel_min_,2) + 2 * pow(dist-dist_1_,2) * vel(2) * (vel.norm()-vel_min_) / vel.norm() * A_.row(3*i+1).transpose());
+                Gradient_vx += - p_f_beta_ux * pow(dist-dist_1_,2) * pow(vel.norm()-vel_min_,2) + f_beta * (2*(dist-dist_1_)*dist_grad(0) * A_.row(3*i).transpose() * pow(vel.norm()-vel_min_,2) + 2 * pow(dist-dist_1_,2) * vel(0) * (vel.norm()-vel_min_) / vel.norm() * A_.row(3*i+1).transpose());
+                Gradient_vy += - p_f_beta_uy * pow(dist-dist_1_,2) * pow(vel.norm()-vel_min_,2) + f_beta * (2*(dist-dist_1_)*dist_grad(1) * A_.row(3*i).transpose() * pow(vel.norm()-vel_min_,2) + 2 * pow(dist-dist_1_,2) * vel(1) * (vel.norm()-vel_min_) / vel.norm() * A_.row(3*i+1).transpose());
+                Gradient_vz += - p_f_beta_uz * pow(dist-dist_1_,2) * pow(vel.norm()-vel_min_,2) + f_beta * (2*(dist-dist_1_)*dist_grad(2) * A_.row(3*i).transpose() * pow(vel.norm()-vel_min_,2) + 2 * pow(dist-dist_1_,2) * vel(2) * (vel.norm()-vel_min_) / vel.norm() * A_.row(3*i+1).transpose());
             }
         }
         
