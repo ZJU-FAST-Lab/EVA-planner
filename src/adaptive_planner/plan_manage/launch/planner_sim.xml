@@ -12,7 +12,7 @@
   <arg name="cy"/>
   <arg name="fx"/>
   <arg name="fy"/>
-
+  
   <arg name="flight_type"/>
   <arg name="point_num"/>
   <arg name="point0_x"/>
@@ -45,7 +45,7 @@
     <rosparam file="$(find plan_manage)/config/traj.yaml" command="load" />
     <remap from = "/odom_world"    to = "$(arg odometry_topic)"/>
     <remap from = "/sdf_map/odom"  to = "$(arg odometry_topic)"/>
-    <!-- <remap from = "/sdf_map/cloud" to = "$(arg cloud_topic)"/> -->
+    <remap from = "/sdf_map/cloud" to = "$(arg cloud_topic)"/>
     <remap from = "/position_cmd"  to = "/planning/pos_cmd"/>
     
     <remap from = "/sdf_map/pose"  to = "$(arg camera_pose_topic)"/> 

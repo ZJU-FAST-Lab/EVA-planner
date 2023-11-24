@@ -10,72 +10,6 @@
   <!-- topic of your odometry such as VIO or LIO -->
   <arg name="odom_topic" value="/visual_slam/odom" />
   
-  <!-- main algorithm params -->
-  <include file="$(find plan_manage)/launch/planner_sim.xml">
-
-    <arg name="map_size_x_" value="$(arg map_size_x)"/>
-    <arg name="map_size_y_" value="$(arg map_size_y)"/>
-    <arg name="map_size_z_" value="$(arg map_size_z)"/>
-    <arg name="odometry_topic" value="$(arg odom_topic)"/>
-
-    <!-- camera pose: transform of camera frame in the world frame -->
-    <!-- depth topic: depth image, 640x480 by default -->
-    <!-- don't set cloud_topic if you already set these ones! -->
-    <arg name="camera_pose_topic" value="/pcl_render_node/camera_pose"/>
-    <arg name="depth_topic" value="/pcl_render_node/depth"/>
-
-    <!-- topic of point cloud measurement, such as from LIDAR  -->
-    <!-- don't set camera pose and depth, if you already set this one! -->
-    <!-- <arg name="cloud_topic" value="/map_generator/global_cloud"/> -->
-    <!-- <arg name="cloud_topic" value="/pcl_render_node/cloud"/> -->
-
-    <!-- intrinsic params of the depth camera -->
-    <arg name="cx" value="321.8554382324219"/>
-    <arg name="cy" value="241.2396240234375"/>
-    <arg name="fx" value="386.02557373046875"/>
-    <arg name="fy" value="386.02557373046875"/>
-    
-    <!-- 1: use 3D Nav Goal to select goal  -->
-    <!-- 2: use global waypoints below  -->
-    <arg name="flight_type" value="1" />
-
-    <!-- global waypoints -->
-    <!-- It generates a piecewise min-snap traj passing all waypoints -->
-    <arg name="point_num" value="8" />
-
-    <arg name="point0_x" value="-3.1" />
-    <arg name="point0_y" value="-4.95" />
-    <arg name="point0_z" value="1.0" />
-
-    <arg name="point1_x" value="3.67" />
-    <arg name="point1_y" value="-4.82" />
-    <arg name="point1_z" value="1.0" />
-
-    <arg name="point2_x" value="3.81" />
-    <arg name="point2_y" value="5.56" />
-    <arg name="point2_z" value="1.0" />
-
-    <arg name="point3_x" value="-4.97" />
-    <arg name="point3_y" value="5.52" />
-    <arg name="point3_z" value="1.0" />
-
-    <arg name="point4_x" value="-7.1" />
-    <arg name="point4_y" value="0.28" />
-    <arg name="point4_z" value="1.0" />
-
-    <arg name="point5_x" value="1.2" />
-    <arg name="point5_y" value="6.5" />
-    <arg name="point5_z" value="1.0" />
-
-    <arg name="point6_x" value="-4.6" />
-    <arg name="point6_y" value="7.4" />
-    <arg name="point6_z" value="1.0" />
-
-    <arg name="point7_x" value="-8.2" />
-    <arg name="point7_y" value="1.2" />
-    <arg name="point7_z" value="1.0" />
-  </include>
-
   <node pkg="waypoint_generator" name="waypoint_generator" type="waypoint_generator" output="screen">
     <remap from="~goal"           to="/goal"/>
     <param name="waypoint_type"   value="manual-lonely-waypoint"/>     
@@ -165,10 +99,71 @@
         <remap from="~global_map" to="/map_generator/global_cloud"/>
         <remap from="~odometry"   to="$(arg odom_topic)"/>
   </node>
+  
+  <!-- main algorithm params -->
+  <include file="$(find plan_manage)/launch/planner_sim.xml">
 
-  <!-- Start rviz -->
-  <node name="rviz" pkg="rviz" type="rviz" output="screen"
-       args="-d $(find plan_manage)/launch/rviz_config/sim.rviz"> 
-  </node>
+    <arg name="map_size_x_" value="$(arg map_size_x)"/>
+    <arg name="map_size_y_" value="$(arg map_size_y)"/>
+    <arg name="map_size_z_" value="$(arg map_size_z)"/>
+    <arg name="odometry_topic" value="$(arg odom_topic)"/>
+
+    <!-- camera pose: transform of camera frame in the world frame -->
+    <!-- depth topic: depth image, 640x480 by default -->
+    <!-- don't set cloud_topic if you already set these ones! -->
+    <arg name="camera_pose_topic" value="/pcl_render_node/camera_pose"/>
+    <arg name="depth_topic" value="/pcl_render_node/depth"/>
+
+    <!-- topic of point cloud measurement, such as from LIDAR  -->
+    <!-- don't set camera pose and depth, if you already set this one! -->
+    <!-- <arg name="cloud_topic" value="/map_generator/global_cloud"/> -->
+    <arg name="cloud_topic" value="/pcl_render_node/cloud"/>
+
+    <!-- intrinsic params of the depth camera -->
+    <arg name="cx" value="321.8554382324219"/>
+    <arg name="cy" value="241.2396240234375"/>
+    <arg name="fx" value="386.02557373046875"/>
+    <arg name="fy" value="386.02557373046875"/>
+    
+    <!-- 1: use 3D Nav Goal to select goal  -->
+    <!-- 2: use global waypoints below  -->
+    <arg name="flight_type" value="1" />
+
+    <!-- global waypoints -->
+    <!-- It generates a piecewise min-snap traj passing all waypoints -->
+    <arg name="point_num" value="8" />
+
+    <arg name="point0_x" value="-3.1" />
+    <arg name="point0_y" value="-4.95" />
+    <arg name="point0_z" value="1.0" />
+
+    <arg name="point1_x" value="3.67" />
+    <arg name="point1_y" value="-4.82" />
+    <arg name="point1_z" value="1.0" />
+
+    <arg name="point2_x" value="3.81" />
+    <arg name="point2_y" value="5.56" />
+    <arg name="point2_z" value="1.0" />
+
+    <arg name="point3_x" value="-4.97" />
+    <arg name="point3_y" value="5.52" />
+    <arg name="point3_z" value="1.0" />
+
+    <arg name="point4_x" value="-7.1" />
+    <arg name="point4_y" value="0.28" />
+    <arg name="point4_z" value="1.0" />
+
+    <arg name="point5_x" value="1.2" />
+    <arg name="point5_y" value="6.5" />
+    <arg name="point5_z" value="1.0" />
+
+    <arg name="point6_x" value="-4.6" />
+    <arg name="point6_y" value="7.4" />
+    <arg name="point6_z" value="1.0" />
+
+    <arg name="point7_x" value="-8.2" />
+    <arg name="point7_y" value="1.2" />
+    <arg name="point7_z" value="1.0" />
+  </include>
 
 </launch>

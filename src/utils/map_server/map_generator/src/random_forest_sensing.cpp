@@ -175,7 +175,7 @@ void RandomMapGenerate() {
   cloudMap.height = 1;
   cloudMap.is_dense = true;
 
-  ROS_WARN("Finished generate random map ");
+  // ROS_WARN("Finished generate random map ");
 
   kdtreeLocalMap.setInputCloud(cloudMap.makeShared());
 
