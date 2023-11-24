@@ -118,7 +118,7 @@
     <!-- don't set camera pose and depth, if you already set this one! -->
     <!-- <arg name="cloud_topic" value="/map_generator/global_cloud"/> -->
     <arg name="cloud_topic" value="/pcl_render_node/cloud"/>
-
+    
     <!-- intrinsic params of the depth camera -->
     <arg name="cx" value="321.8554382324219"/>
     <arg name="cy" value="241.2396240234375"/>

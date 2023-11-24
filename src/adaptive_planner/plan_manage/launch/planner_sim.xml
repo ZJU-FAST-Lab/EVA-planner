@@ -167,8 +167,8 @@
     <param name="optimization/N"        value="40"  type="int"/>
     <param name="optimization/K"        value="3.0" type="double"/>
     <param name="optimization/vel_min"  value="0.1" type="double"/>
-    <param name="optimization/dist_0"   value="0.5" type="double"/>         <!-- dist_0 : trajectory safe dist -->>
-    <param name="optimization/dist_1"   value="2.0" type="double"/>         <!-- dist_1 : system safe dist -->>
+    <param name="optimization/dist_0"   value="0.5" type="double"/>         <!-- dist_0 : trajectory safe dist -->
+    <param name="optimization/dist_1"   value="2.0" type="double"/>         <!-- dist_1 : system safe dist -->
   
     <param name="optimization/alpha1" value="5.0"   type="double"/>         <!-- fs   : similarity of the reference traj -->
     <param name="optimization/alpha2" value="0.001"  type="double"/>         <!-- fvthe: progress value -->
