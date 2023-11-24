@@ -37,7 +37,20 @@ cd EVA-planner
 catkin_make
 ```
 
-## 3. Use GPU or not
+## 3. Run a simple example.
+Open rviz:
+```
+source devel/setup.bash
+roslaunch plan_manage rviz.launch
+```
+Then, open another terminal and run code:
+```
+source devel/setup.bash
+roslaunch plan_manage simulation.launch
+```
+Then you can enter **G** with the keyboard and use the mouse to select a target.
+
+## 4. Use GPU or not
 Packages in this repo, local_sensing have GPU, CPU two different versions. By default, they are in CPU version for better compatibility. By changing
  ```
  set(ENABLE_CUDA false)
@@ -62,19 +75,6 @@ Don't forget to re-compile the code!
 **local_sensing** is the simulated sensors. If ```ENABLE_CUDA``` **true**, it mimics the depth measured by stereo cameras and renders a depth image by GPU. If ```ENABLE_CUDA``` **false**, it will publish pointclouds with no ray-casting. Our local mapping module automatically selects whether depth images or pointclouds as its input.
 
 For installation of CUDA, please go to [CUDA ToolKit](https://developer.nvidia.com/cuda-toolkit)
-
-## 4. Run a simple example.
-Open rviz:
-```
-source devel/setup.bash
-roslaunch plan_manage rviz.launch
-```
-Then, open another terminal and run code:
-```
-source devel/setup.bash
-roslaunch plan_manage simulation.launch
-```
-Then you can enter **G** with the keyboard and use the mouse to select a target.
 
 # Acknowledgements
 - The framework of this repository is based on [Fast-Planner](https://github.com/HKUST-Aerial-Robotics/Fast-Planner) by Zhou Boyu who achieves impressive proformance on quaorotor local planning.
