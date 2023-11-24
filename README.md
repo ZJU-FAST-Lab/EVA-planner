@@ -3,9 +3,9 @@
 **EVA**-planner: an **E**n**V**ironmental **A**daptive Gradient-based Local Planner for Quadrotors.
 
 ## 0. Overview
-**Author**: Lun Quan, Zhiwei Zhang, Xingguang Zhong, Chao Xu and [Fei Gao](https://ustfei.com/) from [ZJU FAST Lab](http://zju-fast.com/).
+**Author**: [Lun Quan](http://zju-fast.com/lun-quan/), Zhiwei Zhang, Xingguang Zhong, Chao Xu and [Fei Gao](http://zju-fast.com/fei-gao/) from [ZJU FAST Lab](http://zju-fast.com/).
 
-**Related Paper**: [EVA-Planner: Environmental Adaptive Quadrotor Planning, Lun Quan, Zhiwei Zhang, Chao Xu and Fei Gao](https://ieeexplore.ieee.org/document/9561759) accepted by 2021 IEEE International Conference on Robotics and Automation (ICRA).
+**Related Paper**: [EVA-Planner: Environmental Adaptive Quadrotor Planning](https://ieeexplore.ieee.org/document/9561759), Lun Quan, Zhiwei Zhang, Chao Xu and Fei Gao accepted by 2021 IEEE International Conference on Robotics and Automation (ICRA).
 
 **Video Links**: [Google](https://www.youtube.com/watch?v=HcwBNcah0eo&t=4s), [Bilibili](https://www.bilibili.com/video/BV1Zz4y1C7rt)(for Mainland China)
 
@@ -13,7 +13,7 @@
 - All planning algorithms along with other key modules, such as mapping, are implemented in **adaptive_planner**
     - **path_searching**: includes multi-layer planner (A*, low-MPC and high-MPCC).
 
-    - **path_env**: includes online mapping algorithms for the planning system (grid map and **ESDF**(Euclidean signed distance filed)). 
+    - **path_env**: includes online mapping algorithms for the planning system (grid map and [ESDF](https://github.com/HKUST-Aerial-Robotics/FIESTA)(Euclidean signed distance filed)). 
     
     - **path_manage**: High-level modules that schedule and call the mapping and planning algorithms. Interfaces for launching the whole system, as well as the configuration files are contained here
 
