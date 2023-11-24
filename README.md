@@ -64,6 +64,12 @@ Don't forget to re-compile the code!
 For installation of CUDA, please go to [CUDA ToolKit](https://developer.nvidia.com/cuda-toolkit)
 
 ## 4. Run a simple example.
+Open rviz:
+```
+source devel/setup.bash
+roslaunch plan_manage rviz.launch
+```
+Then, open another terminal and run code:
 ```
 source devel/setup.bash
 roslaunch plan_manage simulation.launch
